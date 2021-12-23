@@ -7,8 +7,7 @@ from pprint import pprint
 from itertools import groupby
 from operator import itemgetter
 
-baseDir = "/Users/adababco/Downloads/letterboxd-mrhen-phase-three/"
-baseDir = "C:/Users/babad/Source/movieSorter"
+baseDir = "C:/Users/babad/Source/movie-sorter"
 
 def load_memo(file):
     # LeftKey,RightKey,Winner
@@ -252,14 +251,15 @@ def write_memo(file, comparisons):
         extrasaction="ignore",
     )
     writer.writeheader()
-    writer.writerows([
+    rows = (
         {
-            "LeftKey": list(key)[0],
-            "RightKey": list(key)[1],
+            "LeftKey": sorted(list(key))[0],
+            "RightKey": sorted(list(key))[1],
             "Winner": winner,
         }
         for key, winner in comparisons.items()
-    ])
+    )
+    writer.writerows(sorted(rows, key=itemgetter("LeftKey", "RightKey")))
 
 
 def clear_memo(comparisons, rating_key, secondary_key=None):
@@ -370,7 +370,7 @@ def sort_bubble_step(ratings, index):
     right = ratings[index+1]
     comp_result = rating_sorter(left, right, verbose=False)
     if comp_result == 1:
-        print(f"Bubble swap: {rating_to_key(left)} now beats {rating_to_key(right)}")
+        print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
         ratings[index] = right
         ratings[index+1] = left
         return True
