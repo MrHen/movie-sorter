@@ -356,14 +356,14 @@ def build_description(ratingThresholds):
     return "\n".join(rankedDescription)
 
 
-def build_movie_label(movie):
+def build_movie_label(movie, position_prefix="#"):
     if isinstance(movie, str):
         return movie
     position = movie.get("Position")
     key = movie.get("Key")
     if position:
         position = str(position).rjust(4, ' ')
-        return f"#{position} - {key}"
+        return f"{position_prefix}{position} - {key}"
     return key
 
 
@@ -771,7 +771,7 @@ pprint(output)
 
 
 # REINSERT
-key_to_reinsert = "Cube 2: Hypercube (2002)"
+key_to_reinsert = "Cars (2006)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -782,7 +782,7 @@ index = len(rankingWorstToBest) - ranking_to_reinsert["Position"]
 if rankingWorstToBest[index]["Key"] == key_to_reinsert:
     del rankingWorstToBest[index]
 
-clear_memo(memo, key_to_reinsert)
+# clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
@@ -795,7 +795,8 @@ for movie in rankedDeltas:
         delta = '▼'
     else:
         delta = ' '
-    print(f"{delta} {movie['Position']} {movie['Key']}\t changed from {movie['RatingPrev']}\t to {movie['RatingCurr']}")
+    label = build_movie_label(movie, position_prefix=delta)
+    print(f"{label}\t changed from {movie['RatingPrev']}\t to {movie['RatingCurr']}")
 
 
 # UTILS
@@ -819,6 +820,10 @@ add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 ###
 # TAG LISTS
 ###
+rankingsByKey = {
+    ranked_to_key(ranking): ranking
+    for ranking in rankingWorstToBest
+}
 entries_by_tags = {
     k: sorted(g, key=itemgetter("Key"))
     for k, g in groupby(
