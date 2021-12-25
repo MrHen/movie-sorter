@@ -100,6 +100,8 @@ ratingCurve = {
 sum(ratingCurve.values())
 
 def rating_to_key(line):
+    if "Key" in line:
+        return line.get("Key")
     name = line["Name"]
     year = line["Year"]
     return f"{name} ({year})"
@@ -420,8 +422,8 @@ def aggregate_comparisons(comparisons, key, max_seen=10):
                 queue.add(next_key)
     finished.remove(key)
     return finished.union(queue)
-# comparisons['higher_than_key']['Yi Yi (2000)']
-# pprint(aggregate_comparisons(comparisons['higher_than_key'], 'Yi Yi (2000)', max_seen=10))
+    # comparisons['higher_than_key']['Yi Yi (2000)']
+    # pprint(aggregate_comparisons(comparisons['higher_than_key'], 'Yi Yi (2000)', max_seen=10))
 
 
 def find_comparison_loops(comparisons, curr_key, path=None, max_depth=10):
@@ -814,9 +816,9 @@ add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 # Toy Story (1995)
 # Finding Nemo
 
-
+###
 # TAG LISTS
-
+###
 entries_by_tags = {
     k: sorted(g, key=itemgetter("Key"))
     for k, g in groupby(
@@ -836,12 +838,12 @@ entries_by_tags = {
     )
 }
 
-target_tag = "marathon-candyman"
+target_tag = "marathon-pixar"
 print("\n" + "\n".join([
     build_movie_label(movie)
     for movie in sorted(
         [
-            rankingsByKey[entry["Key"]]
+            rankingsByKey.get(entry["Key"], entry)
             for entry in entries_by_tags[target_tag]
         ],
         key=cmp_to_key(rating_sorter),
