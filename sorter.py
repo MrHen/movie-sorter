@@ -99,11 +99,15 @@ ratingCurve = {
 }
 sum(ratingCurve.values())
 
+
 def rating_to_key(line):
     if "Key" in line:
         return line.get("Key")
     name = line["Name"]
-    year = line["Year"]
+    if name == "A Day in the Country":
+        year = "1946"
+    else:
+        year = line["Year"]
     return f"{name} ({year})"
 
 
@@ -317,10 +321,10 @@ def print_memo(comparisons, rating_key, rankingsByKey=None):
             build_movie_label(rankingsByKey.get(key, key)) 
             for key in higher_than
         ]
-    for label in sorted(lower_than):
+    for label in sorted(lower_than, reverse=True):
         print(f"\t {label}")
     print(f"Movies higher than\t {movie_label}:")
-    for label in sorted(higher_than):
+    for label in sorted(higher_than, reverse=True):
         print(f"\t {label}")
 
 
@@ -771,7 +775,7 @@ pprint(output)
 
 
 # REINSERT
-key_to_reinsert = "Cars (2006)"
+key_to_reinsert = "Inside Out (2015)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -782,7 +786,7 @@ index = len(rankingWorstToBest) - ranking_to_reinsert["Position"]
 if rankingWorstToBest[index]["Key"] == key_to_reinsert:
     del rankingWorstToBest[index]
 
-# clear_memo(memo, key_to_reinsert)
+clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
@@ -806,9 +810,9 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Legend (1985)")
-reverse_memo(memo, "Ratatouille (2007)", "Monster (2003)")
+reverse_memo(memo, "Monsters University (2013)", "2012 (2009)")
+print_memo(memo, "Monsters University (2013)", rankingsByKey)
 print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
-print_memo(memo, "Candyman (1992)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
@@ -843,6 +847,7 @@ entries_by_tags = {
     )
 }
 
+target_tag = "marathon-cube"
 target_tag = "marathon-pixar"
 print("\n" + "\n".join([
     build_movie_label(movie)
