@@ -97,6 +97,19 @@ ratingCurve = {
     "4.5": 0.08,
     "5": 0.04,
 }
+# https://www.wolframalpha.com/input/?i=-0.08+x%5E3+%2B+0.7+x%5E2+%2B+1.3+x+%2B+0.1+for+x+between+1+and+10
+ratingCurve = {
+    "0.5": 0.02,
+    "1": 0.05,
+    "1.5": 0.08,
+    "2": 0.11,
+    "2.5": 0.14,
+    "3": 0.16,
+    "3.5": 0.16,
+    "4": 0.14,
+    "4.5": 0.1,
+    "5": 0.04,
+}
 sum(ratingCurve.values())
 
 
