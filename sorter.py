@@ -824,7 +824,7 @@ rankingsByKey = {
 
 clear_memo(memo, "Legend (1985)")
 reverse_memo(memo, "Monsters University (2013)", "2012 (2009)")
-print_memo(memo, "Monsters University (2013)", rankingsByKey)
+print_memo(memo, "The Good Dinosaur (2015)", rankingsByKey)
 print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
