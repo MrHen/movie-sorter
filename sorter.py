@@ -85,18 +85,18 @@ starsWorstToBest = [
     "4.5",
     "5",
 ]
-ratingCurve = {
-    "0.5": 0.02,
-    "1": 0.05,
-    "1.5": 0.08,
-    "2": 0.11,
-    "2.5": 0.14,
-    "3": 0.17,
-    "3.5": 0.18,
-    "4": 0.13,
-    "4.5": 0.08,
-    "5": 0.04,
-}
+# ratingCurve = {
+#     "0.5": 0.02,
+#     "1": 0.05,
+#     "1.5": 0.08,
+#     "2": 0.11,
+#     "2.5": 0.14,
+#     "3": 0.17,
+#     "3.5": 0.18,
+#     "4": 0.13,
+#     "4.5": 0.08,
+#     "5": 0.04,
+# }
 # https://www.wolframalpha.com/input/?i=-0.08+x%5E3+%2B+0.7+x%5E2+%2B+1.3+x+%2B+0.1+for+x+between+1+and+10
 ratingCurve = {
     "0.5": 0.02,
@@ -788,7 +788,7 @@ pprint(output)
 
 
 # REINSERT
-key_to_reinsert = "Inside Out (2015)"
+key_to_reinsert = "Coco (2017)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -824,7 +824,7 @@ rankingsByKey = {
 
 clear_memo(memo, "Legend (1985)")
 reverse_memo(memo, "Monsters University (2013)", "2012 (2009)")
-print_memo(memo, "The Good Dinosaur (2015)", rankingsByKey)
+print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
