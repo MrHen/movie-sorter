@@ -823,7 +823,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Legend (1985)")
-reverse_memo(memo, "Incredibles 2 (2018)", "Toy Story 2 (1999)")
+reverse_memo(memo, "Finding Dory (2016)", "Spaceballs (1987)")
 print_memo(memo, "Finding Dory (2016)", rankingsByKey)
 print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
 
