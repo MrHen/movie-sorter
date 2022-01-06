@@ -125,6 +125,8 @@ def rating_to_key(line):
 
 
 def ranked_to_key(line):
+    if "Key" in line:
+        return line.get("Key")
     name = line["Name"]
     year = line["Year"]
     return f"{name} ({year})"
@@ -586,6 +588,27 @@ def run_fix_multi_loop(movie_key, loops_higher_than, memo):
     reverse_memo(memo, fix["left"], fix["right"])
 
 
+def run_fix_first_loop(memo, rankings, max_depth=3):
+    loops_higher_than = True
+    while loops_higher_than:
+        print("Finding next loop...")
+        comparisons = build_comparisons(memo)
+        for ranking in rankings:
+            ranking_key = ranked_to_key(ranking)
+            loops_higher_than = find_comparison_loops(
+                comparisons['higher_than_key'],
+                ranking_key,
+                max_depth=max_depth,
+            )
+            if loops_higher_than:
+                movie_key = ranking["Key"]
+                label = build_movie_label(ranking)
+                print(f"{len(loops_higher_than)} loops for {label}\n")
+                run_fix_multi_loop(movie_key, loops_higher_than, memo)
+                run_bubble_sorting(rankingWorstToBest)
+                break
+
+
 # LOAD RATINGS
 ratingsFile = f"{baseDir}/ratings.csv"
 with open(ratingsFile, 'r') as file:
@@ -732,25 +755,7 @@ print_memo(memo, largestKey)
 
 
 # FIX FIRST LOOP
-loops_higher_than = True
-while loops_higher_than:
-    print("Finding next loop...")
-    comparisons = build_comparisons(memo)
-    for ranking in rankingBestToWorst:
-        ranking_key = ranked_to_key(ranking)
-        loops_higher_than = find_comparison_loops(
-            comparisons['higher_than_key'],
-            ranking_key,
-            max_depth=3,
-        )
-        if loops_higher_than:
-            movie_key = ranking["Key"]
-            label = build_movie_label(ranking)
-            position = ranking["Position"]
-            print(f"{len(loops_higher_than)} loops for {label}\n")
-            run_fix_multi_loop(movie_key, loops_higher_than, memo)
-            run_bubble_sorting(rankingWorstToBest)
-            break
+run_fix_first_loop(memo, rankingBestToWorst)
 
 
 # LOAD DIARY
@@ -823,8 +828,8 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Legend (1985)")
-reverse_memo(memo, "Finding Dory (2016)", "Spaceballs (1987)")
-print_memo(memo, "Finding Dory (2016)", rankingsByKey)
+reverse_memo(memo, "Incredibles 2 (2018)", "Finding Nemo (2003)")
+print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
@@ -862,14 +867,21 @@ entries_by_tags = {
 
 target_tag = "marathon-cube"
 target_tag = "marathon-pixar"
+target_tag_entires = sorted(
+    [
+        rankingsByKey.get(entry["Key"], entry)
+        for entry in entries_by_tags[target_tag]
+    ],
+    key=cmp_to_key(rating_sorter),
+    reverse=True,
+)
 print("\n" + "\n".join([
     build_movie_label(movie)
-    for movie in sorted(
-        [
-            rankingsByKey.get(entry["Key"], entry)
-            for entry in entries_by_tags[target_tag]
-        ],
-        key=cmp_to_key(rating_sorter),
-        reverse=True,
-    )
+    for movie in target_tag_entires
 ]))
+
+run_fix_first_loop(
+    memo,
+    target_tag_entires,
+    max_depth=3,
+)
