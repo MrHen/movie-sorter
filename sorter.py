@@ -695,6 +695,14 @@ if memo:
         write_memo(file, memo)
 
 
+# FIX FIRST LOOP
+run_fix_first_loop(
+    memo,
+    rankingBestToWorst,
+    max_depth=3,
+)
+
+
 # DECADE GROUPING
 ignoreStars = {
     "0.5",
@@ -752,10 +760,6 @@ for keys, comparison in memo.items():
             largestKey = key
 
 print_memo(memo, largestKey)
-
-
-# FIX FIRST LOOP
-run_fix_first_loop(memo, rankingBestToWorst)
 
 
 # LOAD DIARY
@@ -828,8 +832,8 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Legend (1985)")
-reverse_memo(memo, "Incredibles 2 (2018)", "Finding Nemo (2003)")
-print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
+reverse_memo(memo, "Incredibles 2 (2018)", "The Chronicles of Riddick: Dark Fury (2004)")
+print_memo(memo, "Toy Story 4 (2019)", rankingsByKey)
 print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
