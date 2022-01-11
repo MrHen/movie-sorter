@@ -832,9 +832,9 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Legend (1985)")
-reverse_memo(memo, "Incredibles 2 (2018)", "The Chronicles of Riddick: Dark Fury (2004)")
-print_memo(memo, "Toy Story 4 (2019)", rankingsByKey)
-print_memo(memo, "WALLÂ·E (2008)", rankingsByKey)
+reverse_memo(memo, "Soul (2020)", "10 Cloverfield Lane (2016)")
+print_memo(memo, "Soul (2020)", rankingsByKey)
+print_memo(memo, "Ratatouille (2007)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
