@@ -307,7 +307,7 @@ def reverse_memo(comparisons, primary_key, secondary_key):
     print(f"Reversed\t {previous}\t to {comparisons[key]}")
 
 
-def print_memo(comparisons, rating_key, rankingsByKey=None):
+def analyze_memo(comparisons, rating_key, rankingsByKey=None):
     rankingsByKey = rankingsByKey or {}
     higher_than = set()
     lower_than = set()
@@ -325,17 +325,27 @@ def print_memo(comparisons, rating_key, rankingsByKey=None):
                 lower_than.add(them)
             else:
                 higher_than.add(them)
+    return {
+        "higher_than": [rankingsByKey.get(key, key) for key in higher_than],
+        "lower_than": [rankingsByKey.get(key, key) for key in lower_than],
+    }
+
+
+def print_memo(comparisons, rating_key, rankingsByKey=None):
+    rankingsByKey = rankingsByKey or {}
+    results = analyze_memo(comparisons, rating_key, rankingsByKey=rankingsByKey)
+    higher_than = results["higher_than"]
+    lower_than = results["lower_than"]
+    lower_than = [
+        build_movie_label(movie) 
+        for movie in lower_than
+    ]
+    higher_than = [
+        build_movie_label(movie) 
+        for movie in higher_than
+    ]
     movie_label = build_movie_label(rankingsByKey.get(rating_key, rating_key))
     print(f"Movies lower than\t {movie_label}:")
-    if rankingsByKey:
-        lower_than = [
-            build_movie_label(rankingsByKey.get(key, key)) 
-            for key in lower_than
-        ]
-        higher_than = [
-            build_movie_label(rankingsByKey.get(key, key)) 
-            for key in higher_than
-        ]
     for label in sorted(lower_than, reverse=True):
         print(f"\t {label}")
     print(f"Movies higher than\t {movie_label}:")
@@ -386,10 +396,10 @@ def build_movie_label(movie, position_prefix="#"):
     return key
 
 
-def sort_bubble_step(ratings, index):
+def sort_bubble_step(ratings, index, verbose=False):
     left = ratings[index]
     right = ratings[index+1]
-    comp_result = rating_sorter(left, right, verbose=False)
+    comp_result = rating_sorter(left, right, verbose=verbose)
     if comp_result == 1:
         print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
         ratings[index] = right
@@ -509,12 +519,12 @@ def run_group_sorting(ratingsUnsorted):
     return rankingWorstToBest
 
 
-def run_bubble_sorting(rankingWorstToBest):
+def run_bubble_sorting(rankingWorstToBest, verbose=False):
     changes = True
     while changes:
         changes = 0
         for i in range(len(rankingWorstToBest) - 1):
-            saw_change = sort_bubble_step(rankingWorstToBest, i)
+            saw_change = sort_bubble_step(rankingWorstToBest, i, verbose=verbose)
             if saw_change:
                 changes += 1
         print(f"Bubble finished with {changes} changes")
@@ -645,7 +655,7 @@ run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
 # RUN BUBBLE SORTING
-run_bubble_sorting(rankingWorstToBest)
+run_bubble_sorting(rankingWorstToBest, verbose=True)
 
 
 # PREP THRESHOLDS
@@ -701,6 +711,19 @@ run_fix_first_loop(
     rankingBestToWorst,
     max_depth=3,
 )
+
+
+# LOOP MEMO
+rankingsByKey = {
+    ranked_to_key(ranking): ranking
+    for ranking in rankingWorstToBest
+}
+loop_memo_key = "Toy Story (1995)"
+print_memo(memo, loop_memo_key, rankingsByKey)
+results = analyze_memo(memo, loop_memo_key, rankingsByKey)
+left = list(sorted(results["lower_than"], key=itemgetter("Position")))[0]
+right = list(sorted(results["higher_than"], key=itemgetter("Position")))[-1]
+rating_sorter(left, right)
 
 
 # DECADE GROUPING
@@ -797,7 +820,7 @@ pprint(output)
 
 
 # REINSERT
-key_to_reinsert = "Coco (2017)"
+key_to_reinsert = "Toy Story (1995)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -808,7 +831,7 @@ index = len(rankingWorstToBest) - ranking_to_reinsert["Position"]
 if rankingWorstToBest[index]["Key"] == key_to_reinsert:
     del rankingWorstToBest[index]
 
-clear_memo(memo, key_to_reinsert)
+# clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
@@ -834,7 +857,7 @@ rankingsByKey = {
 clear_memo(memo, "Legend (1985)")
 reverse_memo(memo, "Soul (2020)", "10 Cloverfield Lane (2016)")
 print_memo(memo, "Soul (2020)", rankingsByKey)
-print_memo(memo, "Ratatouille (2007)", rankingsByKey)
+print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
@@ -871,7 +894,7 @@ entries_by_tags = {
 
 target_tag = "marathon-cube"
 target_tag = "marathon-pixar"
-target_tag_entires = sorted(
+target_tag_entries = sorted(
     [
         rankingsByKey.get(entry["Key"], entry)
         for entry in entries_by_tags[target_tag]
@@ -879,13 +902,14 @@ target_tag_entires = sorted(
     key=cmp_to_key(rating_sorter),
     reverse=True,
 )
+
 print("\n" + "\n".join([
     build_movie_label(movie)
-    for movie in target_tag_entires
+    for movie in target_tag_entries
 ]))
 
 run_fix_first_loop(
     memo,
-    target_tag_entires,
+    target_tag_entries,
     max_depth=3,
 )
