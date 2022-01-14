@@ -459,17 +459,17 @@ def find_comparison_loops(comparisons, curr_key, path=None, max_depth=10):
     loops = []
     if max_depth <= 0:
         return loops
-    path = path or []
-    path.append(curr_key)
+    path = path or tuple()
+    path = (*path, curr_key,)
     next_keys = comparisons.get(curr_key, [])
     for next_key in next_keys:
         if next_key == path[0]:
-            loops.append([*path, next_key])
+            loops.append((*path, next_key,))
         else:
             loops.extend(find_comparison_loops(
                 comparisons,
                 next_key,
-                path=[*path],
+                path=tuple(path),
                 max_depth=max_depth-1,
             ))
     return loops
@@ -566,10 +566,15 @@ def run_missing_insert(ratingsUnsorted, rankingWorstToBest, insert=True):
             rankingWorstToBest.insert(missingIndex, missingMovie)
 
 
-def run_fix_multi_loop(movie_key, loops_higher_than, memo):
+def run_fix_multi_loop(loops_higher_than, memo, movie_key=None):
+    loops = set()
     hits = dict()
     pairs = list()
-    for loop in loops_higher_than[-10:]:
+    for loop in loops_higher_than:
+        loop_keys = frozenset(loop)
+        if loop_keys in loops:
+            continue
+        loops.add(loop_keys)
         left = None
         right = None
         for key in loop:
@@ -614,9 +619,57 @@ def run_fix_first_loop(memo, rankings, max_depth=3):
                 movie_key = ranking["Key"]
                 label = build_movie_label(ranking)
                 print(f"{len(loops_higher_than)} loops for {label}\n")
-                run_fix_multi_loop(movie_key, loops_higher_than, memo)
+                run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
                 run_bubble_sorting(rankingWorstToBest)
                 break
+
+
+def run_fix_all_loops(memo, rankings, max_depth=3, max_loops=10):
+    all_loops = True
+    while all_loops:
+        print("Finding next batch of loops...")
+        comparisons = build_comparisons(memo)
+        all_loops = list()
+        first_ranking = None
+        for ranking in rankings:
+            ranking_key = ranked_to_key(ranking)
+            loops_higher_than = find_comparison_loops(
+                comparisons['higher_than_key'],
+                ranking_key,
+                max_depth=max_depth,
+            )
+            if loops_higher_than:
+                first_ranking = first_ranking or ranking
+                label = build_movie_label(ranking)
+                print(f"Found {len(loops_higher_than)} loops for {label}")
+                all_loops.extend(loops_higher_than)
+                if len(all_loops) > max_loops:
+                    break
+        if all_loops:
+            first_ranking_key = ranked_to_key(first_ranking)
+            label = build_movie_label(first_ranking)
+            print(f"\n{len(all_loops)} loops starting at {label}\n")
+            run_fix_multi_loop(all_loops, memo, movie_key=first_ranking_key)
+            run_bubble_sorting(rankingWorstToBest)
+
+
+def run_fix_loop(memo, ranking, max_depth=3):
+    loops_higher_than = True
+    while loops_higher_than:
+        print("Finding next loop...")
+        comparisons = build_comparisons(memo)
+        ranking_key = ranked_to_key(ranking)
+        loops_higher_than = find_comparison_loops(
+            comparisons['higher_than_key'],
+            ranking_key,
+            max_depth=max_depth,
+        )
+        if loops_higher_than:
+            movie_key = ranking["Key"]
+            label = build_movie_label(ranking)
+            print(f"{len(loops_higher_than)} loops for {label}\n")
+            run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
+            run_bubble_sorting(rankingWorstToBest)
 
 
 # LOAD RATINGS
@@ -712,13 +765,18 @@ run_fix_first_loop(
     max_depth=3,
 )
 
+run_fix_all_loops(
+    memo,
+    rankingBestToWorst,
+    max_depth=3,
+)
 
 # LOOP MEMO
 rankingsByKey = {
     ranked_to_key(ranking): ranking
     for ranking in rankingWorstToBest
 }
-loop_memo_key = "Toy Story (1995)"
+loop_memo_key = "Cube 2: Hypercube (2002)"
 print_memo(memo, loop_memo_key, rankingsByKey)
 results = analyze_memo(memo, loop_memo_key, rankingsByKey)
 left = list(sorted(results["lower_than"], key=itemgetter("Position")))[0]
@@ -856,10 +914,16 @@ rankingsByKey = {
 
 clear_memo(memo, "Legend (1985)")
 reverse_memo(memo, "Soul (2020)", "10 Cloverfield Lane (2016)")
-print_memo(memo, "Soul (2020)", rankingsByKey)
+print_memo(memo, "The Good Dinosaur (2015)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
+
+run_fix_loop(
+    memo,
+    rankingsByKey["The Good Dinosaur (2015)"],
+    max_depth=5,
+)
 
 # TODO
 # Eternal Sunshine of the Spotless Mind (2004)
