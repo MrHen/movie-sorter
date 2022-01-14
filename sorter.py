@@ -655,7 +655,7 @@ run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
 # RUN BUBBLE SORTING
-run_bubble_sorting(rankingWorstToBest, verbose=True)
+run_bubble_sorting(rankingWorstToBest, verbose=False)
 
 
 # PREP THRESHOLDS
