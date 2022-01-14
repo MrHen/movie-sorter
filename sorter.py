@@ -1,69 +1,21 @@
 import csv
-import math
 
-from functools import cmp_to_key
 from textwrap import dedent
 from pprint import pprint
 from itertools import groupby
 from operator import itemgetter
 
-baseDir = "C:/Users/babad/Source/movie-sorter"
+import constants
+from dairy import line_to_key, load_diary
 
-def load_memo(file):
-    # LeftKey,RightKey,Winner
-    reader = csv.DictReader(file)
-    comparisons = {
-        frozenset({row["LeftKey"], row["RightKey"]}): (row["Winner"] or None)
-        for row in reader
-    }
-    return comparisons
+from memo import add_memo, analyze_memo, clear_memo, load_memo, print_memo, reverse_memo, write_memo
+from labels import build_movie_label
+from rankings import load_rankings, ranked_to_key, write_rankings
+from ratings import load_ratings, rating_sorter, rating_to_key, rating_cmp
+from prompt import prompt_for_loop, prompt_for_segments, prompt_for_winner
+from thresholds import build_description, build_thresholds
 
-
-def load_ratings(file):
-    reader = csv.DictReader(file)
-    ratings = [
-        {
-            "Decade": row.get("Year", "")[0:3] + "0s",
-            "Key": rating_to_key(row),
-            **row,
-        }
-        for row in reader
-    ]
-    return sorted(ratings, key=itemgetter("Rating"))
-
-
-def load_rankings(file, ratings=None):
-    ratings = ratings or {}
-    ratingsByKey = {
-        rating_to_key(rating): rating
-        for rating in ratings
-    }
-    reader = csv.DictReader(file)
-    ratings = [
-        {
-            "Key": ranked_to_key(row),
-            "Position": int(row["Position"]),
-            "Description": row["Description"],
-            **ratingsByKey.get(ranked_to_key(row)),
-        }
-        for row in reader
-        if ranked_to_key(row) in ratingsByKey
-    ]
-    return sorted(ratings, key=itemgetter("Position"))
-
-
-def load_diary(file):
-    reader = csv.DictReader(file)
-    dairy_entries = [
-        {
-            **row,
-            "Key": line_to_key(row),
-            "Tags": line_to_diary_tags(row),
-        }
-        for row in reader
-    ]
-    return dairy_entries
-
+baseDir = constants.BASE_DIR
 
 memo = {}
 # DON'T OVERWRITE THIS
@@ -113,132 +65,6 @@ ratingCurve = {
 sum(ratingCurve.values())
 
 
-def rating_to_key(line):
-    if "Key" in line:
-        return line.get("Key")
-    name = line["Name"]
-    if name == "A Day in the Country":
-        year = "1946"
-    else:
-        year = line["Year"]
-    return f"{name} ({year})"
-
-
-def ranked_to_key(line):
-    if "Key" in line:
-        return line.get("Key")
-    name = line["Name"]
-    year = line["Year"]
-    return f"{name} ({year})"
-
-
-def line_to_key(line):
-    if "Key" in line:
-        return line.get("Key")
-    name = line["Name"]
-    year = line["Year"]
-    return f"{name} ({year})"
-
-
-def line_to_diary_tags(line):
-    tags = line.get("Tags")
-    if tags:
-        return tags.split(", ")
-    return tags or None
-
-
-def prompt_for_winner(a, b):
-    response = None
-    while response not in {"1", "2"}:
-        prompt = dedent(
-            f"""
-            Which is best?
-            1) {a}
-            2) {b}
-            """
-        )
-        response = input(prompt).upper()
-    if response == '1':
-        return a
-    elif response == '2':
-        return b
-    else:
-        print(f"Invalid response: {response}")
-        return None
-
-
-def prompt_for_loop(loop, delimiter="<<"):
-    response = None
-    while response not in range(1, len(loop)):
-        if response == "":
-            prompt = []
-        else:
-            prompt = ["Flip which segment?"]
-            for i in range(0, len(loop)):
-                movie = loop[i]
-                if i:
-                    prompt.append(f"    {delimiter}{i}{delimiter}")
-                prompt.append(f"  {movie}")
-        response = input("\n".join(prompt) + "\n")
-        if response != "":
-            try:
-                    response = int(response)
-            except ValueError:
-                response = None
-    return response
-
-
-def prompt_for_segments(segments, movie_key=None):
-    response = None
-    while response not in range(0, len(segments)):
-        if response == "":
-            prompt = []
-        else:
-            prompt = ["Flip which segment?"]
-            left = None
-            right = None
-            for i in range(0, len(segments)):
-                segment = segments[i]
-                left = segment["left"]
-                if i != 0 and (left == movie_key or right == movie_key):
-                    prompt.append("")
-                right = segment["right"]
-                count = segment["count"]
-                if count > 1:
-                    count = f"x{count}"
-                else:
-                    count = ""
-                prompt.append(f"{i}:\t {count}\t {trunc_string(left)}\t <<<\t {trunc_string(right)}")
-        response = input("\n".join(prompt) + "\n")
-        if response != "":
-            try:
-                    response = int(response)
-            except ValueError:
-                response = None
-    return response
-
-
-def rating_sorter(a, b, verbose=True):
-    a_key = rating_to_key(a)
-    b_key = rating_to_key(b)
-    if a_key == b_key:
-        return 0
-    memo_key = frozenset({a_key, b_key})
-    if memo_key in memo:
-        winner = memo[memo_key]
-        if verbose:
-            print(f"\tFound previous:\t {a_key}\t vs {b_key}\t => {winner}")
-    else:
-        winner = prompt_for_winner(a_key, b_key)
-        memo[memo_key] = winner
-    if a_key == winner:
-        return 1
-    elif b_key == winner:
-        return -1
-    else:
-        return 0
-
-
 def write_metadata(file, description):
     fieldnames = ["Date", "Name", "Tags", "URL", "Description"]
     metadata = {
@@ -253,153 +79,10 @@ def write_metadata(file, description):
     writer.writerow(metadata)
 
 
-def write_rankings(file, rankings):
-    fieldnames = ["Position", "Name", "Year", "URL", "Description"]
-    writer = csv.DictWriter(
-        file,
-        fieldnames=fieldnames,
-        extrasaction="ignore",
-    )
-    writer.writeheader()
-    writer.writerows(rankings)
-
-
-def write_memo(file, comparisons):
-    fieldnames = ["LeftKey", "RightKey", "Winner"]
-    writer = csv.DictWriter(
-        file,
-        fieldnames=fieldnames,
-        extrasaction="ignore",
-    )
-    writer.writeheader()
-    rows = (
-        {
-            "LeftKey": sorted(list(key))[0],
-            "RightKey": sorted(list(key))[1],
-            "Winner": winner,
-        }
-        for key, winner in comparisons.items()
-    )
-    writer.writerows(sorted(rows, key=itemgetter("LeftKey", "RightKey")))
-
-
-def clear_memo(comparisons, rating_key, secondary_key=None):
-    keys_to_remove = [
-        key
-        for key in comparisons.keys()
-        if rating_key in key
-        if not secondary_key or secondary_key in key
-    ]
-    for key in keys_to_remove:
-        previous = " vs. ".join(list(key))
-        print(f"Cleared previous:\t {previous}")
-        comparisons.pop(key, None)
-
-
-def reverse_memo(comparisons, primary_key, secondary_key):
-    key = frozenset([primary_key, secondary_key])
-    winner = comparisons[key]
-    if winner == primary_key:
-        comparisons[key] = secondary_key
-    elif winner == secondary_key:
-        comparisons[key] = primary_key
-    previous = " vs. ".join(list(key))
-    print(f"Reversed\t {previous}\t to {comparisons[key]}")
-
-
-def analyze_memo(comparisons, rating_key, rankingsByKey=None):
-    rankingsByKey = rankingsByKey or {}
-    higher_than = set()
-    lower_than = set()
-    for key in comparisons.keys():
-        if rating_key in key:
-            keys = list(key)
-            a_key = keys[0]
-            b_key = keys[1]
-            if a_key == rating_key:
-                them = b_key
-            else:
-                them = a_key
-            winner = comparisons[key]
-            if winner == rating_key:
-                lower_than.add(them)
-            else:
-                higher_than.add(them)
-    return {
-        "higher_than": [rankingsByKey.get(key, key) for key in higher_than],
-        "lower_than": [rankingsByKey.get(key, key) for key in lower_than],
-    }
-
-
-def print_memo(comparisons, rating_key, rankingsByKey=None):
-    rankingsByKey = rankingsByKey or {}
-    results = analyze_memo(comparisons, rating_key, rankingsByKey=rankingsByKey)
-    higher_than = results["higher_than"]
-    lower_than = results["lower_than"]
-    lower_than = [
-        build_movie_label(movie) 
-        for movie in lower_than
-    ]
-    higher_than = [
-        build_movie_label(movie) 
-        for movie in higher_than
-    ]
-    movie_label = build_movie_label(rankingsByKey.get(rating_key, rating_key))
-    print(f"Movies lower than\t {movie_label}:")
-    for label in sorted(lower_than, reverse=True):
-        print(f"\t {label}")
-    print(f"Movies higher than\t {movie_label}:")
-    for label in sorted(higher_than, reverse=True):
-        print(f"\t {label}")
-
-
-def add_memo(rankingsByKey, a_key, b_key):
-    a_movie = rankingsByKey[a_key]
-    b_movie = rankingsByKey[b_key]
-    rating_sorter(a_movie, b_movie)
-
-
-def build_thresholds(ratingIds, ratingCurve, totalRated):
-    ratingThresholds = {}
-    thresholdTotal = 0
-    for rating in ratingIds:
-        curve = ratingCurve[rating]
-        thresholdTotal += totalRated * curve
-        thresholdFloor = math.floor(thresholdTotal)
-        if len(rating) == 1:
-            rating = f"{rating}.0"
-        percentage = math.floor(curve*100)
-        ratingThresholds[thresholdFloor] = f"{rating} star threshold ({percentage: >2}%)"
-    return ratingThresholds
-
-
-def build_description(ratingThresholds):
-    rankedDescription = [
-        "From best to worst.",
-        "",
-    ]
-    rankedDescription.extend([
-        f"Rank {key: >3} is {value}"
-        for key, value in ratingThresholds.items()
-    ])
-    return "\n".join(rankedDescription)
-
-
-def build_movie_label(movie, position_prefix="#"):
-    if isinstance(movie, str):
-        return movie
-    position = movie.get("Position")
-    key = movie.get("Key")
-    if position:
-        position = str(position).rjust(4, ' ')
-        return f"{position_prefix}{position} - {key}"
-    return key
-
-
 def sort_bubble_step(ratings, index, verbose=False):
     left = ratings[index]
     right = ratings[index+1]
-    comp_result = rating_sorter(left, right, verbose=verbose)
+    comp_result = rating_sorter(left, right, memo, verbose=verbose)
     if comp_result == 1:
         print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
         ratings[index] = right
@@ -490,12 +173,6 @@ def fix_loop(memo, loop, delimiter="<<"):
     reverse_memo(memo, loop[fix-1], loop[fix])
 
 
-def trunc_string(movie, length=35):
-    if len(movie) > length:
-        return movie[:length-3]+'...'
-    return movie
-
-
 def run_group_sorting(ratingsUnsorted):
     ratingsGroup = {
         k: {
@@ -509,7 +186,7 @@ def run_group_sorting(ratingsUnsorted):
     for rating in starsWorstToBest:
         print(f"\nStarting {rating} block...")
         items = ratingsGroup[rating]["movies"]
-        itemsRanked = sorted(items, key=cmp_to_key(rating_sorter))
+        itemsRanked = sorted(items, key=rating_cmp(memo))
         rankedByRating[rating] = itemsRanked
     # POST GROUP SORTING
     rankingWorstToBest = []
@@ -536,7 +213,7 @@ def run_search(rankingWorstToBest, movie):
     while left <= right:
         curr = (left + right) // 2
         curr_movie = rankingWorstToBest[curr]
-        comp_result = rating_sorter(movie, curr_movie)
+        comp_result = rating_sorter(movie, curr_movie, memo)
         print(f"Searching... {left}|{curr}|{right} -> {comp_result}")
         if comp_result == 1:
             left = curr + 1
@@ -758,7 +435,7 @@ if memo:
         write_memo(file, memo)
 
 
-# FIX FIRST LOOP
+# FIX LOOPs
 run_fix_first_loop(
     memo,
     rankingBestToWorst,
@@ -769,6 +446,7 @@ run_fix_all_loops(
     memo,
     rankingBestToWorst,
     max_depth=3,
+    max_loops=10,
 )
 
 # LOOP MEMO
@@ -776,12 +454,12 @@ rankingsByKey = {
     ranked_to_key(ranking): ranking
     for ranking in rankingWorstToBest
 }
-loop_memo_key = "Cube 2: Hypercube (2002)"
+loop_memo_key = "Incredibles 2 (2018)"
 print_memo(memo, loop_memo_key, rankingsByKey)
 results = analyze_memo(memo, loop_memo_key, rankingsByKey)
 left = list(sorted(results["lower_than"], key=itemgetter("Position")))[0]
 right = list(sorted(results["higher_than"], key=itemgetter("Position")))[-1]
-rating_sorter(left, right)
+rating_sorter(left, right, memo)
 
 
 # DECADE GROUPING
@@ -913,8 +591,8 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Legend (1985)")
-reverse_memo(memo, "Soul (2020)", "10 Cloverfield Lane (2016)")
-print_memo(memo, "The Good Dinosaur (2015)", rankingsByKey)
+reverse_memo(memo, "Incredibles 2 (2018)", "The Boondock Saints (1999)")
+print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
@@ -963,7 +641,7 @@ target_tag_entries = sorted(
         rankingsByKey.get(entry["Key"], entry)
         for entry in entries_by_tags[target_tag]
     ],
-    key=cmp_to_key(rating_sorter),
+    key=rating_cmp(memo),
     reverse=True,
 )
 
@@ -972,8 +650,8 @@ print("\n" + "\n".join([
     for movie in target_tag_entries
 ]))
 
-run_fix_first_loop(
+run_fix_all_loops(
     memo,
     target_tag_entries,
-    max_depth=3,
+    max_depth=4,
 )
