@@ -653,5 +653,5 @@ print("\n" + "\n".join([
 run_fix_all_loops(
     memo,
     target_tag_entries,
-    max_depth=4,
+    max_depth=3,
 )
