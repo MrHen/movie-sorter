@@ -556,7 +556,7 @@ pprint(output)
 
 
 # REINSERT
-key_to_reinsert = "Toy Story (1995)"
+key_to_reinsert = "Jackie Brown (1997)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -566,8 +566,11 @@ ranking_to_reinsert = rankingsByKey[key_to_reinsert]
 index = len(rankingWorstToBest) - ranking_to_reinsert["Position"]
 if rankingWorstToBest[index]["Key"] == key_to_reinsert:
     del rankingWorstToBest[index]
+    print(f"deleting {key_to_reinsert}")
+else:
+    print(f"missing {key_to_reinsert}")
 
-# clear_memo(memo, key_to_reinsert)
+clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
@@ -590,7 +593,7 @@ rankingsByKey = {
     for ranking in rankingWorstToBest
 }
 
-clear_memo(memo, "Legend (1985)")
+clear_memo(memo, "American Graffiti (1973)")
 reverse_memo(memo, "Incredibles 2 (2018)", "The Boondock Saints (1999)")
 print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
@@ -634,8 +637,8 @@ entries_by_tags = {
     )
 }
 
-target_tag = "marathon-cube"
 target_tag = "marathon-pixar"
+target_tag = "marathon-tarantino"
 target_tag_entries = sorted(
     [
         rankingsByKey.get(entry["Key"], entry)
