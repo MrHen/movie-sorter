@@ -556,7 +556,7 @@ pprint(output)
 
 
 # REINSERT
-key_to_reinsert = "Jackie Brown (1997)"
+key_to_reinsert = "Pulp Fiction (1994)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -570,7 +570,7 @@ if rankingWorstToBest[index]["Key"] == key_to_reinsert:
 else:
     print(f"missing {key_to_reinsert}")
 
-clear_memo(memo, key_to_reinsert)
+# clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
