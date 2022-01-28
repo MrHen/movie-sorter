@@ -20,6 +20,7 @@ def load_diary(file):
     dairy_entries = [
         {
             **row,
+            "Watched Month": row.get("Watched Date", "")[:7] or None,
             "Key": line_to_key(row),
             "Tags": line_to_diary_tags(row),
         }

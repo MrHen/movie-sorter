@@ -594,7 +594,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "American Graffiti (1973)")
-reverse_memo(memo, "Incredibles 2 (2018)", "The Boondock Saints (1999)")
+reverse_memo(memo, "Jackie Brown (1997)", "Soul (2020)")
 print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
@@ -656,5 +656,52 @@ print("\n" + "\n".join([
 run_fix_all_loops(
     memo,
     target_tag_entries,
+    max_depth=3,
+)
+
+
+###
+# MONTHLY LISTS
+###
+rankingsByKey = {
+    ranked_to_key(ranking): ranking
+    for ranking in rankingWorstToBest
+}
+entries_by_month = {
+    k: sorted(g, key=itemgetter("Key"))
+    for k, g in groupby(
+        sorted(
+            [
+                {
+                    "Key": entry.get("Key"),
+                    "Watched Month": entry.get("Watched Month"),
+                }
+                for entry in diary_entries
+                if entry.get("Watched Month")
+            ],
+            key=itemgetter("Watched Month")
+        ),
+        key=itemgetter("Watched Month"),
+    )
+}
+
+target_month = "2022-01"
+target_month_entries = sorted(
+    [
+        rankingsByKey.get(entry["Key"], entry)
+        for entry in entries_by_month[target_month]
+    ],
+    key=rating_cmp(memo),
+    reverse=True,
+)
+
+print("\n" + "\n".join([
+    build_movie_label(movie)
+    for movie in target_month_entries
+]))
+
+run_fix_all_loops(
+    memo,
+    target_month_entries,
     max_depth=3,
 )
