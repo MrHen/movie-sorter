@@ -575,19 +575,6 @@ clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
-# PRINT DELTAS
-rankedDeltas = filter(lambda x: x["RatingDelta"], rankingBestToWorst)
-for movie in rankedDeltas:
-    if movie['RatingPrev'] < movie['RatingCurr']:
-        delta = '▲'
-    elif movie['RatingPrev'] > movie['RatingCurr']:
-        delta = '▼'
-    else:
-        delta = ' '
-    label = build_movie_label(movie, position_prefix=delta)
-    print(f"{label}\t changed from {movie['RatingPrev']}\t to {movie['RatingCurr']}")
-
-
 # UTILS
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -707,3 +694,20 @@ run_fix_all_loops(
     target_month_entries,
     max_depth=3,
 )
+
+
+# PRINT DELTAS
+delta_targets = rankingBestToWorst
+delta_targets = target_month_entries
+rankedDeltas = filter(lambda x: x["RatingDelta"], delta_targets)
+for movie in rankedDeltas:
+    if movie['RatingPrev'] < movie['RatingCurr']:
+        delta = '▲'
+    elif movie['RatingPrev'] > movie['RatingCurr']:
+        delta = '▼'
+    else:
+        delta = ' '
+    label = build_movie_label(movie, position_prefix=delta)
+    print(f"{label}\t changed from {movie['RatingPrev']}\t to {movie['RatingCurr']}")
+
+
