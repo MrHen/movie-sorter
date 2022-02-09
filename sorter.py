@@ -349,35 +349,117 @@ def run_fix_loop(memo, ranking, max_depth=3):
             run_bubble_sorting(rankingWorstToBest)
 
 
-# LOAD RATINGS
-ratingsFile = f"{baseDir}/ratings.csv"
-with open(ratingsFile, 'r') as file:
-    ratingsUnsorted = load_ratings(file)
-
-ratingsByKey = {
-    rating_to_key(rating): rating
-    for rating in ratingsUnsorted
-}
-
-
-# LOAD RANKINGS
-rankingsFile = f"{baseDir}/rankings.csv"
-with open(rankingsFile, 'r') as file:
-    rankingsBestToWorst = load_rankings(file, ratingsUnsorted)
-
-rankingWorstToBest = list(reversed(rankingsBestToWorst))
-rankingsByKey = {
-    ranked_to_key(movie): movie
-    for movie in rankingsBestToWorst
-}
+def reload_all(*, base_dir):
+    # LOAD RATINGS
+    ratingsFile = f"{base_dir}/ratings.csv"
+    with open(ratingsFile, 'r') as file:
+        ratingsUnsorted = load_ratings(file)
+    # LOAD RANKINGS
+    rankingsFile = f"{base_dir}/rankings.csv"
+    with open(rankingsFile, 'r') as file:
+        rankingsBestToWorst = load_rankings(file, ratingsUnsorted)
+    rankingWorstToBest = list(reversed(rankingsBestToWorst))
+    return {
+        "ratings": ratingsUnsorted,
+        "rankings": rankingWorstToBest,
+    }
 
 
-# RUN GROUP SORTING
-rankingWorstToBest = run_group_sorting(ratingsUnsorted)
-rankingsByKey = {
-    ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
-}
+def reload_diary(
+    *,
+    base_dir,
+    stars_worst_to_best,
+    rating_curve,
+    ranking_worst_to_best,
+):
+    # PREP THRESHOLDS
+    rankingBestToWorst = list(reversed(ranking_worst_to_best))
+    totalRated = len(rankingBestToWorst)
+    rankingThresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, totalRated)
+    # LOAD DIARY
+    ignore_diary_keys = frozenset({
+        "Anima (2019)",
+        "Squid Game (2021)",
+    })
+    rankingsFile = f"{base_dir}/diary.csv"
+    with open(rankingsFile, 'r') as file:
+        diary_entries = load_diary(file)
+    diary_by_key = {
+        line_to_key(entry): entry
+        for entry in diary_entries
+    }
+    diary_keys = frozenset(diary_by_key.keys())
+    ranking_keys = frozenset([
+        line_to_key(movie)
+        for movie in ranking_worst_to_best
+    ])
+    missing_keys = diary_keys - ranking_keys - ignore_diary_keys
+    output = []
+    for missing_key in missing_keys:
+        missing_movie = diary_by_key[missing_key]
+        position = run_search(ranking_worst_to_best, missing_movie)
+        position = len(ranking_worst_to_best) - position
+        for threshold in rankingThresholds:
+            if threshold > position:
+                threshold_label = rankingThresholds[threshold]
+                print(f"AAA {threshold} vs {position} => {threshold_label}")
+                break
+        output.append(f"{missing_key} => {position} as {threshold_label}")
+    return output
+
+
+def save_all(
+    *,
+    rankings_worst_to_best,
+    stars_worst_to_best,
+    rating_curve,
+    base_dir,
+    memo,
+):
+    # PREP THRESHOLDS
+    rankingBestToWorst = list(reversed(rankings_worst_to_best))
+    totalRated = len(rankingBestToWorst)
+    rankingThresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, totalRated)
+    rankedDescription = build_description(rankingThresholds)
+    print(rankedDescription)
+    # APPLY THRESHOLDS
+    ratingCurr = 5
+    for i in range(0, len(rankingBestToWorst)):
+        item = rankingBestToWorst[i]
+        position = i + 1
+        description = rankingThresholds.get(position, None)
+        item["Position"] = position
+        item["Description"] = description
+        item["RatingCurr"] = str(ratingCurr)
+        item["RatingPrev"] = item["Rating"]
+        item["RatingDelta"] = ratingCurr - float(item["Rating"])
+        if description:
+            ratingCurr -= 0.5
+    # SAVE OUTPUT
+    rankedOutput = [
+        {
+            "Position": movie["Position"],
+            "Name": movie["Name"],
+            "Year": movie["Year"],
+            "URL": movie["Letterboxd URI"],
+            "Description": movie["Description"],
+        }
+        for movie in rankingBestToWorst
+    ]
+    rankingsFile = f"{base_dir}/rankings.csv"
+    with open(rankingsFile, 'w', newline='') as file:
+        # write_metadata(file, rankedDescription)
+        # file.write("\n")
+        write_rankings(file, rankedOutput)
+    # SAVE MEMO
+    if memo:
+        with open(memoFile, 'w', newline='') as file:
+            write_memo(file, memo)
+
+
+data = reload_all(base_dir=baseDir)
+ratingsUnsorted = data["ratings"]
+rankingWorstToBest = data["rankings"]
 
 
 # INSERT MISSING RATINGS
@@ -388,60 +470,31 @@ run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 run_bubble_sorting(rankingWorstToBest, verbose=False)
 
 
-# PREP THRESHOLDS
-rankingBestToWorst = list(reversed(rankingWorstToBest))
-totalRated = len(rankingBestToWorst)
-rankingThresholds = build_thresholds(reversed(starsWorstToBest), ratingCurve, totalRated)
-rankedDescription = build_description(rankingThresholds)
-print(rankedDescription)
-
-
-# APPLY THRESHOLDS
-ratingCurr = 5
-for i in range(0, len(rankingBestToWorst)):
-    item = rankingBestToWorst[i]
-    position = i + 1
-    description = rankingThresholds.get(position, None)
-    item["Position"] = position
-    item["Description"] = description
-    item["RatingCurr"] = str(ratingCurr)
-    item["RatingPrev"] = item["Rating"]
-    item["RatingDelta"] = ratingCurr - float(item["Rating"])
-    if description:
-        ratingCurr -= 0.5
-
-
-# SAVE OUTPUT
-rankedOutput = [
-    {
-        "Position": movie["Position"],
-        "Name": movie["Name"],
-        "Year": movie["Year"],
-        "URL": movie["Letterboxd URI"],
-        "Description": movie["Description"],
-    }
-    for movie in rankingBestToWorst
-]
-rankingsFile = f"{baseDir}/rankings.csv"
-with open(rankingsFile, 'w', newline='') as file:
-    # write_metadata(file, rankedDescription)
-    # file.write("\n")
-    write_rankings(file, rankedOutput)
-
-
-# SAVE MEMO
-if memo:
-    with open(memoFile, 'w', newline='') as file:
-        write_memo(file, memo)
+# RELOAD
+save_all(
+    rankings_worst_to_best=rankingWorstToBest,
+    stars_worst_to_best=starsWorstToBest,
+    rating_curve=ratingCurve,
+    base_dir=baseDir,
+    memo=memo,
+)
+pprint(reload_diary(
+    base_dir=baseDir,
+    stars_worst_to_best=starsWorstToBest,
+    rating_curve=ratingCurve,
+    ranking_worst_to_best=rankingWorstToBest,
+))
 
 
 # FIX LOOPs
+rankingBestToWorst = list(reversed(rankingWorstToBest))
 run_fix_first_loop(
     memo,
     rankingBestToWorst,
     max_depth=3,
 )
 
+rankingBestToWorst = list(reversed(rankingWorstToBest))
 run_fix_all_loops(
     memo,
     rankingBestToWorst,
@@ -460,6 +513,14 @@ results = analyze_memo(memo, loop_memo_key, rankingsByKey)
 left = list(sorted(results["lower_than"], key=itemgetter("Position")))[0]
 right = list(sorted(results["higher_than"], key=itemgetter("Position")))[-1]
 rating_sorter(left, right, memo)
+
+
+# RUN GROUP SORTING
+rankingWorstToBest = run_group_sorting(ratingsUnsorted)
+rankingsByKey = {
+    ranked_to_key(ranking): ranking
+    for ranking in rankingWorstToBest
+}
 
 
 # DECADE GROUPING
@@ -625,9 +686,9 @@ entries_by_tags = {
     )
 }
 
-target_tag = "marathon-pixar"
 target_tag = "marathon-tarantino"
 target_tag = "marathon-leprechaun"
+target_tag = "marathon-pixar"
 target_tag_entries = sorted(
     [
         rankingsByKey.get(entry["Key"], entry)
