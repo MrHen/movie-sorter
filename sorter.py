@@ -457,6 +457,7 @@ def save_all(
             write_memo(file, memo)
 
 
+# RELOAD
 data = reload_all(base_dir=baseDir)
 ratingsUnsorted = data["ratings"]
 rankingWorstToBest = data["rankings"]
@@ -470,7 +471,7 @@ run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 run_bubble_sorting(rankingWorstToBest, verbose=False)
 
 
-# RELOAD
+# SAVE
 save_all(
     rankings_worst_to_best=rankingWorstToBest,
     stars_worst_to_best=starsWorstToBest,
