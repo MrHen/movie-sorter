@@ -471,14 +471,7 @@ run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 run_bubble_sorting(rankingWorstToBest, verbose=False)
 
 
-# SAVE
-save_all(
-    rankings_worst_to_best=rankingWorstToBest,
-    stars_worst_to_best=starsWorstToBest,
-    rating_curve=ratingCurve,
-    base_dir=baseDir,
-    memo=memo,
-)
+# UPDATE DIARY
 pprint(reload_diary(
     base_dir=baseDir,
     stars_worst_to_best=starsWorstToBest,
@@ -487,14 +480,17 @@ pprint(reload_diary(
 ))
 
 
-# FIX LOOPs
-rankingBestToWorst = list(reversed(rankingWorstToBest))
-run_fix_first_loop(
-    memo,
-    rankingBestToWorst,
-    max_depth=3,
+# SAVE
+save_all(
+    rankings_worst_to_best=rankingWorstToBest,
+    stars_worst_to_best=starsWorstToBest,
+    rating_curve=ratingCurve,
+    base_dir=baseDir,
+    memo=memo,
 )
 
+
+# FIX LOOPs
 rankingBestToWorst = list(reversed(rankingWorstToBest))
 run_fix_all_loops(
     memo,
