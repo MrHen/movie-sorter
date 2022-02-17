@@ -755,8 +755,11 @@ run_fix_all_loops(
 
 
 # PRINT DELTAS
-delta_targets = rankingBestToWorst
 delta_targets = target_month_entries
+
+rankingBestToWorst = list(reversed(rankingWorstToBest))
+delta_targets = rankingBestToWorst
+
 rankedDeltas = filter(lambda x: x["RatingDelta"], delta_targets)
 for movie in rankedDeltas:
     if movie['RatingPrev'] < movie['RatingCurr']:
