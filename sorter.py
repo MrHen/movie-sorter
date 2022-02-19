@@ -359,18 +359,23 @@ def reload_all(*, base_dir):
     with open(rankingsFile, 'r') as file:
         rankingsBestToWorst = load_rankings(file, ratingsUnsorted)
     rankingWorstToBest = list(reversed(rankingsBestToWorst))
+    # LOAD DIARY
+    rankingsFile = f"{base_dir}/diary.csv"
+    with open(rankingsFile, 'r') as file:
+        diary_entries = load_diary(file)
     return {
         "ratings": ratingsUnsorted,
         "rankings": rankingWorstToBest,
+        "diary_entries": diary_entries,
     }
 
 
 def reload_diary(
     *,
-    base_dir,
     stars_worst_to_best,
     rating_curve,
     ranking_worst_to_best,
+    diary_entries,
 ):
     # PREP THRESHOLDS
     rankingBestToWorst = list(reversed(ranking_worst_to_best))
@@ -381,9 +386,6 @@ def reload_diary(
         "Anima (2019)",
         "Squid Game (2021)",
     })
-    rankingsFile = f"{base_dir}/diary.csv"
-    with open(rankingsFile, 'r') as file:
-        diary_entries = load_diary(file)
     diary_by_key = {
         line_to_key(entry): entry
         for entry in diary_entries
@@ -461,6 +463,7 @@ def save_all(
 data = reload_all(base_dir=baseDir)
 ratingsUnsorted = data["ratings"]
 rankingWorstToBest = data["rankings"]
+diary_entries = data["diary_entries"]
 
 
 # INSERT MISSING RATINGS
@@ -472,12 +475,12 @@ run_bubble_sorting(rankingWorstToBest, verbose=False)
 
 
 # UPDATE DIARY
-pprint(reload_diary(
-    base_dir=baseDir,
+pprint(sorted(reload_diary(
+    diary_entries=diary_entries,
     stars_worst_to_best=starsWorstToBest,
     rating_curve=ratingCurve,
     ranking_worst_to_best=rankingWorstToBest,
-))
+)))
 
 
 # SAVE
@@ -577,40 +580,6 @@ for keys, comparison in memo.items():
             largestKey = key
 
 print_memo(memo, largestKey)
-
-
-# LOAD DIARY
-ignore_diary_keys = frozenset({
-    "Anima (2019)",
-    "Squid Game (2021)",
-})
-rankingsFile = f"{baseDir}/diary.csv"
-with open(rankingsFile, 'r') as file:
-    diary_entries = load_diary(file)
-
-diary_by_key = {
-    line_to_key(entry): entry
-    for entry in diary_entries
-}
-diary_keys = frozenset(diary_by_key.keys())
-ranking_keys = frozenset([
-    line_to_key(movie)
-    for movie in rankingWorstToBest
-])
-missing_keys = diary_keys - ranking_keys - ignore_diary_keys
-output = []
-for missing_key in missing_keys:
-    missing_movie = diary_by_key[missing_key]
-    position = run_search(rankingWorstToBest, missing_movie)
-    position = len(rankingWorstToBest) - position
-    for threshold in rankingThresholds:
-        if threshold > position:
-            threshold_label = rankingThresholds[threshold]
-            print(f"AAA {threshold} vs {position} => {threshold_label}")
-            break
-    output.append(f"{missing_key} => {position} as {threshold_label}")
-
-pprint(output)
 
 
 # REINSERT
@@ -732,7 +701,7 @@ entries_by_month = {
     )
 }
 
-target_month = "2022-01"
+target_month = "2022-02"
 target_month_entries = sorted(
     [
         rankingsByKey.get(entry["Key"], entry)
