@@ -608,7 +608,7 @@ rankingsByKey = {
     for ranking in rankingWorstToBest
 }
 
-clear_memo(memo, "American Graffiti (1973)")
+clear_memo(memo, "Sharknado 2: The Second One (2014)")
 reverse_memo(memo, "American Psycho (2000)", "Finding Dory (2016)")
 print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
