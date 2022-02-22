@@ -609,7 +609,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "American Graffiti (1973)")
-reverse_memo(memo, "Jackie Brown (1997)", "Soul (2020)")
+reverse_memo(memo, "American Psycho (2000)", "Finding Dory (2016)")
 print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
