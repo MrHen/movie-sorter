@@ -5,6 +5,7 @@ from operator import itemgetter
 from labels import build_movie_label
 from ratings import rating_sorter
 
+
 def load_memo(file):
     # LeftKey,RightKey,Winner
     reader = csv.DictReader(file)
@@ -13,6 +14,7 @@ def load_memo(file):
         for row in reader
     }
     return comparisons
+
 
 def write_memo(file, comparisons):
     fieldnames = ["LeftKey", "RightKey", "Winner"]
@@ -31,6 +33,7 @@ def write_memo(file, comparisons):
         for key, winner in comparisons.items()
     )
     writer.writerows(sorted(rows, key=itemgetter("LeftKey", "RightKey")))
+
 
 def clear_memo(comparisons, rating_key, secondary_key=None):
     keys_to_remove = [

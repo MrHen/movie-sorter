@@ -349,6 +349,50 @@ def run_fix_loop(memo, ranking, max_depth=3):
             run_bubble_sorting(rankingWorstToBest)
 
 
+def run_fix_memo(memo, rating_key, rankingsByKey=None):
+    original = rankingsByKey[rating_key]
+    results = analyze_memo(memo, rating_key)
+    lower_than = results["lower_than"]
+    lower_than = sorted([
+        # build_movie_label(rankingsByKey.get(movie_key, movie_key))
+        movie_key
+        for movie_key in lower_than
+    ], reverse=True)
+    lower_than = [
+        {
+            "left": movie_label,
+            # "right": build_movie_label(original),
+            "right": rating_key,
+            "count": 1,
+            "pos": lower_than.index(movie_label),
+        } 
+        for movie_label in lower_than
+    ]
+    higher_than = results["higher_than"]
+    higher_than = sorted([
+        # build_movie_label(rankingsByKey.get(movie_key, movie_key))
+        movie_key
+        for movie_key in higher_than
+    ], reverse=True)
+    higher_than = [
+        {
+            # "left": build_movie_label(original),
+            "left": rating_key,
+            "right": movie_label,
+            "count": 1,
+            "pos": len(lower_than) + higher_than.index(movie_label),
+        } 
+        for movie_label in higher_than
+    ]
+    segments = [
+        *lower_than,
+        *higher_than,
+    ]
+    response = prompt_for_segments(segments)
+    fix = segments[response]
+    reverse_memo(memo, fix["left"], fix["right"])
+
+
 def reload_all(*, base_dir):
     # LOAD RATINGS
     ratingsFile = f"{base_dir}/ratings.csv"
@@ -502,6 +546,7 @@ run_fix_all_loops(
     max_loops=10,
 )
 
+
 # LOOP MEMO
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -610,11 +655,16 @@ rankingsByKey = {
 
 clear_memo(memo, "Sharknado 2: The Second One (2014)")
 reverse_memo(memo, "American Psycho (2000)", "Finding Dory (2016)")
-print_memo(memo, "Incredibles 2 (2018)", rankingsByKey)
+print_memo(memo, "Annihilation (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
+run_fix_memo(
+    memo,
+    "Annihilation (2018)",
+    rankingsByKey,
+)
 run_fix_loop(
     memo,
     rankingsByKey["The Good Dinosaur (2015)"],
