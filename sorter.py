@@ -628,7 +628,7 @@ print_memo(memo, largestKey)
 
 
 # REINSERT
-key_to_reinsert = "How to Train Your Dragon (2010)"
+key_to_reinsert = "Mean Girls (2004)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -653,7 +653,7 @@ rankingsByKey = {
     for ranking in rankingWorstToBest
 }
 
-clear_memo(memo, "Sharknado 2: The Second One (2014)")
+clear_memo(memo, "Mean Girls (2004)")
 reverse_memo(memo, "American Psycho (2000)", "Finding Dory (2016)")
 print_memo(memo, "Annihilation (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
@@ -662,7 +662,7 @@ add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
 run_fix_memo(
     memo,
-    "Annihilation (2018)",
+    "Mean Girls (2004)",
     rankingsByKey,
 )
 run_fix_loop(
