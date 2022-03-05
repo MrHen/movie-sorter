@@ -662,7 +662,7 @@ add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
 run_fix_memo(
     memo,
-    "Mean Girls (2004)",
+    "How to Train Your Dragon 2 (2014)",
     rankingsByKey,
 )
 run_fix_loop(
@@ -789,5 +789,3 @@ for movie in rankedDeltas:
         delta = ' '
     label = build_movie_label(movie, position_prefix=delta)
     print(f"{label}\t changed from {movie['RatingPrev']}\t to {movie['RatingCurr']}")
-
-
