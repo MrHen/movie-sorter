@@ -168,6 +168,40 @@ def build_cascade(higher, lower, memoKey):
         finished.add(currKey)
 
 
+def build_decade_grouping(
+    *,
+    rankingWorstToBest,
+    count_min=10,
+    count_max=25,
+):
+    ignoreStars = {
+        "0.5",
+        "1",
+        "1.5",
+        "2",
+        "2.5",
+        "3",
+        "3.5",
+    }
+    rankingBestToWorst = list(reversed(rankingWorstToBest))
+    rankingsByDecade = sorted(rankingBestToWorst, key=itemgetter("Decade", "Position"))
+    count_min = 10
+    count_max = 25
+    decadesBestToWorst = {
+        k: {
+            "decade": k,
+            "movies": [
+                movie
+                for movie in g
+                if movie["Rating"] not in ignoreStars
+            ][:count_max],
+        }
+        for k, g in groupby(rankingsByDecade, key=itemgetter("Decade"))
+        if len(g) >= count_min
+    }
+    return decadesBestToWorst
+
+
 def fix_loop(memo, loop, delimiter="<<"):
     fix = prompt_for_loop(loop, delimiter)
     reverse_memo(memo, loop[fix-1], loop[fix])
@@ -569,32 +603,10 @@ rankingsByKey = {
 
 
 # DECADE GROUPING
-ignoreStars = {
-    "0.5",
-    "1",
-    "1.5",
-    "2",
-    "2.5",
-    "3",
-    "3.5",
-}
-rankingsByDecade = sorted(rankingBestToWorst, key=itemgetter("Decade", "Position"))
-count = 15
-decadesBestToWorst = {
-    k: {
-        "decade": k,
-        "movies": [
-            movie
-            for movie in g
-            if movie["Rating"] not in ignoreStars
-        ][:count],
-    }
-    for k, g in groupby(rankingsByDecade, key=itemgetter("Decade"))
-}
+count_min = 10
+decadesBestToWorst = build_decade_grouping(rankingWorstToBest=rankingWorstToBest)
 for decade in decadesBestToWorst:
     movies = decadesBestToWorst[decade]["movies"]
-    if len(movies) < count:
-        continue
     print(decade)
     pprint([
         movie["Key"]
@@ -603,6 +615,7 @@ for decade in decadesBestToWorst:
 
 print(dedent(
     f"""
+    <a href="https://letterboxd.com/mrhen/list/top-2010s">Top 2010s</a>
     <a href="https://letterboxd.com/mrhen/list/top-2000s">Top 2000s</a>
     <a href="https://letterboxd.com/mrhen/list/top-1990s">Top 1990s</a>
     <a href="https://letterboxd.com/mrhen/list/top-1980s">Top 1980s</a>
@@ -628,7 +641,7 @@ print_memo(memo, largestKey)
 
 
 # REINSERT
-key_to_reinsert = "Mean Girls (2004)"
+key_to_reinsert = "The Lure (2015)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -703,8 +716,8 @@ entries_by_tags = {
 }
 
 target_tag = "marathon-tarantino"
-target_tag = "marathon-leprechaun"
 target_tag = "marathon-pixar"
+target_tag = "marathon-leprechaun"
 target_tag_entries = sorted(
     [
         rankingsByKey.get(entry["Key"], entry)
@@ -774,18 +787,19 @@ run_fix_all_loops(
 
 
 # PRINT DELTAS
+delta_targets = target_tag_entries
 delta_targets = target_month_entries
 
 rankingBestToWorst = list(reversed(rankingWorstToBest))
 delta_targets = rankingBestToWorst
 
-rankedDeltas = filter(lambda x: x["RatingDelta"], delta_targets)
+rankedDeltas = filter(lambda x: x.get("RatingDelta", True), delta_targets)
 for movie in rankedDeltas:
-    if movie['RatingPrev'] < movie['RatingCurr']:
+    if movie.get('RatingPrev', 0) < movie.get('RatingCurr', 0):
         delta = '▲'
-    elif movie['RatingPrev'] > movie['RatingCurr']:
+    elif movie.get('RatingPrev', 0) > movie.get('RatingCurr', 0):
         delta = '▼'
     else:
         delta = ' '
     label = build_movie_label(movie, position_prefix=delta)
-    print(f"{label}\t changed from {movie['RatingPrev']}\t to {movie['RatingCurr']}")
+    print(f"{label}\t changed from {movie.get('RatingPrev', '-')}\t to {movie.get('RatingCurr', '-')}")
