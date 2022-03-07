@@ -667,7 +667,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Mean Girls (2004)")
-reverse_memo(memo, "American Psycho (2000)", "Finding Dory (2016)")
+reverse_memo(memo, "Leprechaun: Origins (2014)", "Leprechaun: Back 2 tha Hood (2003)")
 print_memo(memo, "Annihilation (2018)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
