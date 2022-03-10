@@ -641,7 +641,7 @@ print_memo(memo, largestKey)
 
 
 # REINSERT
-key_to_reinsert = "The Lure (2015)"
+key_to_reinsert = "Leprechaun 3 (1995)"
 
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -656,7 +656,7 @@ if ranking_to_reinsert:
     else:
         print(f"missing {key_to_reinsert}")
 
-clear_memo(memo, key_to_reinsert)
+# clear_memo(memo, key_to_reinsert)
 run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
