@@ -134,3 +134,6 @@ ratings.csv
 watched.csv
 
 movie_club.md
+
+lists/*.csv
+stats_*.csv
