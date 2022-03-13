@@ -765,11 +765,12 @@ entries_by_month = {
 }
 
 target_month = "2022-02"
+target_month_entries = [
+    rankingsByKey.get(entry["Key"], entry)
+    for entry in entries_by_month[target_month]
+]
 target_month_entries = sorted(
-    [
-        rankingsByKey.get(entry["Key"], entry)
-        for entry in entries_by_month[target_month]
-    ],
+    target_month_entries,
     key=rating_cmp(memo),
     reverse=True,
 )
