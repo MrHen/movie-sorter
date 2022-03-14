@@ -277,7 +277,14 @@ def run_missing_insert(ratingsUnsorted, rankingWorstToBest, insert=True):
             rankingWorstToBest.insert(missingIndex, missingMovie)
 
 
-def run_fix_multi_loop(loops_higher_than, memo, movie_key=None):
+def run_fix_multi_loop(
+    loops_higher_than,
+    memo,
+    movie_key=None,
+    sort_key="pos",
+    sort_reversed=False,
+    max_segments=None,
+):
     loops = set()
     hits = dict()
     pairs = list()
@@ -308,7 +315,9 @@ def run_fix_multi_loop(loops_higher_than, memo, movie_key=None):
         }
         for pair, count in hits.items()
     ]
-    segments = sorted(segments, key=itemgetter("pos"))
+    segments = sorted(segments, key=itemgetter(sort_key), reverse=sort_reversed)
+    if max_segments:
+        segments = segments[:max_segments]
     response = prompt_for_segments(segments, movie_key=movie_key)
     fix = segments[response]
     reverse_memo(memo, fix["left"], fix["right"])
@@ -330,12 +339,24 @@ def run_fix_first_loop(memo, rankings, max_depth=3):
                 movie_key = ranking["Key"]
                 label = build_movie_label(ranking)
                 print(f"{len(loops_higher_than)} loops for {label}\n")
-                run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
+                run_fix_multi_loop(
+                    loops_higher_than,
+                    memo,
+                    movie_key=movie_key,
+                )
                 run_bubble_sorting(rankingWorstToBest)
                 break
 
 
-def run_fix_all_loops(memo, rankings, max_depth=3, max_loops=10):
+def run_fix_all_loops(
+    memo,
+    rankings,
+    max_depth=3,
+    max_loops=10,
+    max_segments=10,
+    sort_key="pos",
+    sort_reversed=False,
+):
     all_loops = True
     while all_loops:
         print("Finding next batch of loops...")
@@ -354,13 +375,20 @@ def run_fix_all_loops(memo, rankings, max_depth=3, max_loops=10):
                 label = build_movie_label(ranking)
                 print(f"Found {len(loops_higher_than)} loops for {label}")
                 all_loops.extend(loops_higher_than)
-                if len(all_loops) > max_loops:
+                if max_loops and len(all_loops) > max_loops:
                     break
         if all_loops:
             first_ranking_key = ranked_to_key(first_ranking)
             label = build_movie_label(first_ranking)
-            print(f"\n{len(all_loops)} loops starting at {label}\n")
-            run_fix_multi_loop(all_loops, memo, movie_key=first_ranking_key)
+            print(f"\n{len(all_loops)} segments starting at {label}\n")
+            run_fix_multi_loop(
+                all_loops,
+                memo,
+                movie_key=first_ranking_key,
+                max_segments=max_segments,
+                sort_key=sort_key,
+                sort_reversed=sort_reversed,
+            )
             run_bubble_sorting(rankingWorstToBest)
 
 
@@ -577,7 +605,19 @@ run_fix_all_loops(
     memo,
     rankingBestToWorst,
     max_depth=3,
-    max_loops=10,
+    max_loops=None,
+    max_segments=20,
+)
+
+rankingBestToWorst = list(reversed(rankingWorstToBest))
+run_fix_all_loops(
+    memo,
+    rankingBestToWorst,
+    max_depth=5,
+    max_loops=1000,
+    max_segments=20,
+    sort_key="count",
+    sort_reversed=True,
 )
 
 
