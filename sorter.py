@@ -605,15 +605,18 @@ run_fix_all_loops(
     memo,
     rankingBestToWorst,
     max_depth=3,
-    max_loops=100,
     max_segments=20,
+    # max_loops=100,
+    max_loops=None,
+    sort_key="count",
+    sort_reversed=True,
 )
 
 rankingBestToWorst = list(reversed(rankingWorstToBest))
 run_fix_all_loops(
     memo,
     rankingBestToWorst,
-    max_depth=5,
+    max_depth=4,
     max_loops=None,
     max_segments=20,
     sort_key="count",
