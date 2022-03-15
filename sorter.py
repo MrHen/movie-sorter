@@ -605,7 +605,7 @@ run_fix_all_loops(
     memo,
     rankingBestToWorst,
     max_depth=3,
-    max_loops=None,
+    max_loops=100,
     max_segments=20,
 )
 
@@ -614,7 +614,7 @@ run_fix_all_loops(
     memo,
     rankingBestToWorst,
     max_depth=5,
-    max_loops=1000,
+    max_loops=None,
     max_segments=20,
     sort_key="count",
     sort_reversed=True,
