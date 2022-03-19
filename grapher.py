@@ -56,3 +56,27 @@ def edges_from_combinations(combinations):
 # G.add_edges_from(edges)
 # nx.draw_networkx(G)
 # plt.show()
+
+from functools import reduce
+from pprint import pprint
+from tarjan import tarjan
+
+
+def memo_to_graph(acc, item):
+    key, winner = item
+    key_parts = list(key)
+    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
+    if winner not in acc:
+        acc[winner] = list()
+    acc[winner].append(loser)
+    return acc
+
+movie_key = 'Elephant (2003)'
+memo_graph = reduce(memo_to_graph, memo.items(), dict())
+
+# g = {1:[2],2:[1,5],3:[4],4:[3,5],5:[6],6:[7],7:[8],8:[6,9],9:[]}
+
+t = tarjan(memo_graph)
+
+for value in t:
+    print(len(value))

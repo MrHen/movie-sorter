@@ -606,10 +606,10 @@ run_fix_all_loops(
     rankingBestToWorst,
     max_depth=3,
     max_segments=20,
-    # max_loops=100,
-    max_loops=None,
-    sort_key="count",
-    sort_reversed=True,
+    max_loops=100,
+    # max_loops=None,
+    # sort_key="count",
+    # sort_reversed=True,
 )
 
 rankingBestToWorst = list(reversed(rankingWorstToBest))
