@@ -80,3 +80,5 @@ t = tarjan(memo_graph)
 
 for value in t:
     print(len(value))
+
+# https://en.wikipedia.org/wiki/Feedback_arc_set

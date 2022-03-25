@@ -10,10 +10,8 @@ titles_a = JSON.parse()
 titles_b = []
 headers = document.querySelectorAll(".headline-2.prettify")
 for (let header of headers) {
-    if (!titles_a.includes(header.textContent)) {
+    if (titles_a.includes(header.textContent)) {
+    } else {
         header.style = "background-color: #434393;"
     }
 }
-
-
-// https://www.dailymotion.com/video/x26wjjo

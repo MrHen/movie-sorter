@@ -8,6 +8,7 @@ from operator import itemgetter
 import constants
 from dairy import line_to_key, load_diary
 
+from bubble import run_bubble_sorting, bubble_pass
 from memo import add_memo, analyze_memo, clear_memo, load_memo, print_memo, reverse_memo, write_memo
 from labels import build_movie_label
 from rankings import load_rankings, ranked_to_key, write_rankings
@@ -77,18 +78,6 @@ def write_metadata(file, description):
     writer = csv.DictWriter(file, fieldnames=fieldnames, extrasaction="ignore")
     writer.writeheader()
     writer.writerow(metadata)
-
-
-def sort_bubble_step(ratings, index, verbose=False):
-    left = ratings[index]
-    right = ratings[index+1]
-    comp_result = rating_sorter(left, right, memo, verbose=verbose)
-    if comp_result == 1:
-        print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
-        ratings[index] = right
-        ratings[index+1] = left
-        return True
-    return False
 
 
 def build_comparisons(memo):
@@ -230,17 +219,6 @@ def run_group_sorting(ratingsUnsorted):
     return rankingWorstToBest
 
 
-def run_bubble_sorting(rankingWorstToBest, verbose=False):
-    changes = True
-    while changes:
-        changes = 0
-        for i in range(len(rankingWorstToBest) - 1):
-            saw_change = sort_bubble_step(rankingWorstToBest, i, verbose=verbose)
-            if saw_change:
-                changes += 1
-        print(f"Bubble finished with {changes} changes")
-
-
 def run_search(rankingWorstToBest, movie):
     left = 0
     right = len(rankingWorstToBest) - 1
@@ -344,7 +322,7 @@ def run_fix_first_loop(memo, rankings, max_depth=3):
                     memo,
                     movie_key=movie_key,
                 )
-                run_bubble_sorting(rankingWorstToBest)
+                run_bubble_sorting(memo, rankingWorstToBest)
                 break
 
 
@@ -389,7 +367,7 @@ def run_fix_all_loops(
                 sort_key=sort_key,
                 sort_reversed=sort_reversed,
             )
-            run_bubble_sorting(rankingWorstToBest)
+            run_bubble_sorting(memo, rankingWorstToBest)
 
 
 def run_fix_loop(memo, ranking, max_depth=3):
@@ -408,7 +386,7 @@ def run_fix_loop(memo, ranking, max_depth=3):
             label = build_movie_label(ranking)
             print(f"{len(loops_higher_than)} loops for {label}\n")
             run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
-            run_bubble_sorting(rankingWorstToBest)
+            run_bubble_sorting(memo, rankingWorstToBest)
 
 
 def run_fix_memo(memo, rating_key, rankingsByKey=None):
@@ -577,7 +555,7 @@ run_missing_insert(ratingsUnsorted, rankingWorstToBest)
 
 
 # RUN BUBBLE SORTING
-run_bubble_sorting(rankingWorstToBest, verbose=False)
+run_bubble_sorting(memo, rankingWorstToBest, verbose=False)
 
 
 # UPDATE DIARY
@@ -621,6 +599,15 @@ run_fix_all_loops(
     max_segments=20,
     sort_key="count",
     sort_reversed=True,
+)
+
+
+# BUBBLE
+bubble_pass(
+    memo,
+    rankingWorstToBest,
+    step=2,
+    do_swap=False,
 )
 
 
