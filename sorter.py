@@ -469,6 +469,7 @@ def reload_diary(
     ignore_diary_keys = frozenset({
         "Anima (2019)",
         "Squid Game (2021)",
+        "Who Killed Captain Alex? (2010)",
     })
     diary_by_key = {
         line_to_key(entry): entry
