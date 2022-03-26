@@ -8,10 +8,17 @@ def sort_bubble_step(
     verbose=False,
     step=1,
     do_swap=True,
+    reverse=False,
 ):
     left = ratings[index]
     right = ratings[index+step]
-    comp_result = rating_sorter(left, right, memo, verbose=verbose)
+    comp_result = rating_sorter(
+        left,
+        right,
+        memo,
+        verbose=verbose,
+        reverse=reverse,
+    )
     can_swap = comp_result == 1
     if do_swap and can_swap:
         print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
@@ -22,16 +29,20 @@ def sort_bubble_step(
 
 def bubble_pass(
     memo,
-    rankingWorstToBest,
+    rankings,
     verbose=True,
     step=1,
     do_swap=False,
+    max_changes=None,
+    reverse=False,
 ):
     changes = 0
-    for i in range(len(rankingWorstToBest) - step):
+    if reverse:
+        rankings = list(reversed(rankings))
+    for i in range(len(rankings) - step):
         saw_change = sort_bubble_step(
             memo,
-            rankingWorstToBest,
+            rankings,
             i,
             step=step,
             verbose=verbose,
@@ -39,6 +50,8 @@ def bubble_pass(
         )
         if saw_change:
             changes += step
+            if max_changes and max_changes <= changes:
+                break
     return changes
 
 

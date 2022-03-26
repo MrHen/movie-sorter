@@ -30,7 +30,7 @@ def load_ratings(file):
     return sorted(ratings, key=itemgetter("Rating"))
 
 
-def rating_sorter(a, b, memo, verbose=True):
+def rating_sorter(a, b, memo, verbose=True, reverse=False):
     a_key = rating_to_key(a)
     b_key = rating_to_key(b)
     if a_key == b_key:
@@ -44,9 +44,9 @@ def rating_sorter(a, b, memo, verbose=True):
         winner = prompt_for_winner(a_key, b_key)
         memo[memo_key] = winner
     if a_key == winner:
-        return 1
+        return -1 if reverse else 1
     elif b_key == winner:
-        return -1
+        return 1 if reverse else -1
     else:
         return 0
 
