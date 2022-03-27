@@ -47,9 +47,10 @@ def bubble_pass(
             step=step,
             verbose=verbose,
             do_swap=do_swap,
+            reverse=reverse,
         )
         if saw_change:
-            changes += step
+            changes += 1
             if max_changes and max_changes <= changes:
                 break
     return changes
