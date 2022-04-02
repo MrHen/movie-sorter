@@ -798,12 +798,10 @@ entries_by_month = {
     for k, g in groupby(
         sorted(
             [
-                {
-                    "Key": entry.get("Key"),
-                    "Watched Month": entry.get("Watched Month"),
-                }
+                entry
                 for entry in diary_entries
                 if entry.get("Watched Month")
+                if "ignore-ranking" not in (entry.get("Tags") or [])
             ],
             key=itemgetter("Watched Month")
         ),
@@ -811,7 +809,7 @@ entries_by_month = {
     )
 }
 
-target_month = "2022-02"
+target_month = "2022-03"
 target_month_entries = [
     rankingsByKey.get(entry["Key"], entry)
     for entry in entries_by_month[target_month]
@@ -831,6 +829,11 @@ run_fix_all_loops(
     memo,
     target_month_entries,
     max_depth=3,
+    max_segments=20,
+    max_loops=100,
+    # max_loops=None,
+    # sort_key="count",
+    # sort_reversed=True,
 )
 
 
