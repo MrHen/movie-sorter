@@ -816,8 +816,9 @@ target_month_entries = [
 ]
 target_month_entries = sorted(
     target_month_entries,
-    key=rating_cmp(memo),
-    reverse=True,
+    # key=rating_cmp(memo),
+    # reverse=True,
+    key=itemgetter("Position")
 )
 
 print("\n" + "\n".join([
