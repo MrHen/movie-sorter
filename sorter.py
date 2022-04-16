@@ -855,3 +855,4 @@ for movie in rankedDeltas:
         delta = ' '
     label = build_movie_label(movie, position_prefix=delta)
     print(f"{label}\t changed from {movie.get('RatingPrev', '-')}\t to {movie.get('RatingCurr', '-')}")
+
