@@ -137,3 +137,5 @@ movie_club.md
 
 lists/*.csv
 stats_*.csv
+
+voting/*
