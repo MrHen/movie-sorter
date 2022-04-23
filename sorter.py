@@ -607,25 +607,27 @@ run_fix_all_loops(
 rankingBestToWorst = list(reversed(rankingWorstToBest))
 changes = True
 while changes:
-    changes = bubble_pass(
-        memo,
-        rankingWorstToBest,
-        step=2,
-        do_swap=False,
-        max_changes=1,
-        reverse=True,
-        verbose=False,
-    )
-    run_fix_all_loops(
-        memo,
-        rankingBestToWorst,
-        max_depth=3,
-        max_segments=20,
-        max_loops=100,
-        # max_loops=None,
-        # sort_key="count",
-        # sort_reversed=True,
-    )
+    for step in range(2, 20, 1):
+        print(f"starting pass with step={step}")
+        changes = bubble_pass(
+            memo,
+            rankingWorstToBest,
+            step=step,
+            do_swap=False,
+            max_changes=1,
+            reverse=True,
+            verbose=False,
+        )
+        run_fix_all_loops(
+            memo,
+            rankingBestToWorst,
+            max_depth=3,
+            max_segments=20,
+            max_loops=100,
+            # max_loops=None,
+            # sort_key="count",
+            # sort_reversed=True,
+        )
 
 
 # LOOP MEMO
