@@ -1,7 +1,7 @@
 import csv
 from pprint import pprint
 
-voting_file = "voting/Season 5 Week 1 Voting.csv"
+voting_file = "voting/Season 5 Week 2 Voting.csv"
 with open(voting_file, newline="") as file:
     reader = csv.DictReader(file)
     votes = [
@@ -24,7 +24,7 @@ for vote in votes:
         for key in keys
     ]
     for movie in movies:
-        all_movies.add(movie)
+        all_movies.add(movie.split(" (")[0])
     print("\n")
     print("\n".join(movies))
 
