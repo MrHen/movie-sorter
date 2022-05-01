@@ -26,7 +26,7 @@ with open(memoFile, 'r') as file:
     memo = load_memo(file)
 # DON'T OVERWRITE THIS
 
-starsWorstToBest = [
+stars_worst_to_best = [
     "0.5",
     "1",
     "1.5",
@@ -51,7 +51,7 @@ starsWorstToBest = [
 #     "5": 0.04,
 # }
 # https://www.wolframalpha.com/input/?i=-0.08+x%5E3+%2B+0.7+x%5E2+%2B+1.3+x+%2B+0.1+for+x+between+1+and+10
-ratingCurve = {
+rating_curve = {
     "0.5": 0.02,
     "1": 0.05,
     "1.5": 0.08,
@@ -63,7 +63,7 @@ ratingCurve = {
     "4.5": 0.1,
     "5": 0.04,
 }
-sum(ratingCurve.values())
+sum(rating_curve.values())
 
 
 def write_metadata(file, description):
@@ -206,14 +206,14 @@ def run_group_sorting(ratingsUnsorted):
     }
     # RUN GROUP SORTING
     rankedByRating = {}
-    for rating in starsWorstToBest:
+    for rating in stars_worst_to_best:
         print(f"\nStarting {rating} block...")
         items = ratingsGroup[rating]["movies"]
         itemsRanked = sorted(items, key=rating_cmp(memo))
         rankedByRating[rating] = itemsRanked
     # POST GROUP SORTING
     rankingWorstToBest = []
-    for rating in starsWorstToBest:
+    for rating in stars_worst_to_best:
         if rating in rankedByRating:
             rankingWorstToBest.extend(rankedByRating[rating])
     return rankingWorstToBest
@@ -462,9 +462,9 @@ def reload_diary(
     diary_entries,
 ):
     # PREP THRESHOLDS
-    rankingBestToWorst = list(reversed(ranking_worst_to_best))
-    totalRated = len(rankingBestToWorst)
-    rankingThresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, totalRated)
+    ranking_best_to_worst = list(reversed(ranking_worst_to_best))
+    total_rated = len(ranking_best_to_worst)
+    ranking_thresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, total_rated)
     # LOAD DIARY
     ignore_diary_keys = frozenset({
         "Anima (2019)",
@@ -486,9 +486,9 @@ def reload_diary(
         missing_movie = diary_by_key[missing_key]
         position = run_search(ranking_worst_to_best, missing_movie)
         position = len(ranking_worst_to_best) - position
-        for threshold in rankingThresholds:
+        for threshold in ranking_thresholds:
             if threshold > position:
-                threshold_label = rankingThresholds[threshold]
+                threshold_label = ranking_thresholds[threshold]
                 print(f"AAA {threshold} vs {position} => {threshold_label}")
                 break
         output.append(f"{missing_key} => {position} as {threshold_label}")
@@ -562,8 +562,8 @@ run_bubble_sorting(memo, rankingWorstToBest, verbose=False)
 # UPDATE DIARY
 pprint(sorted(reload_diary(
     diary_entries=diary_entries,
-    stars_worst_to_best=starsWorstToBest,
-    rating_curve=ratingCurve,
+    stars_worst_to_best=stars_worst_to_best,
+    rating_curve=rating_curve,
     ranking_worst_to_best=rankingWorstToBest,
 )))
 
@@ -571,8 +571,8 @@ pprint(sorted(reload_diary(
 # SAVE
 save_all(
     rankings_worst_to_best=rankingWorstToBest,
-    stars_worst_to_best=starsWorstToBest,
-    rating_curve=ratingCurve,
+    stars_worst_to_best=stars_worst_to_best,
+    rating_curve=rating_curve,
     base_dir=baseDir,
     memo=memo,
 )
