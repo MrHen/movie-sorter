@@ -611,6 +611,7 @@ while changes:
         print(f"starting pass with step={step}")
         changes = True
         while changes:
+            print("...bubble pass")
             changes = bubble_pass(
                 memo,
                 rankingWorstToBest,
@@ -620,6 +621,7 @@ while changes:
                 reverse=True,
                 verbose=False,
             )
+            print("...fix loops")
             run_fix_all_loops(
                 memo,
                 rankingBestToWorst,
@@ -815,7 +817,7 @@ entries_by_month = {
     )
 }
 
-target_month = "2022-03"
+target_month = "2022-04"
 target_month_entries = [
     rankingsByKey.get(entry["Key"], entry)
     for entry in entries_by_month[target_month]
