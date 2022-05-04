@@ -470,6 +470,7 @@ def reload_diary(
         "Anima (2019)",
         "Squid Game (2021)",
         "Who Killed Captain Alex? (2010)",
+        "Family Dog (1987)",
     })
     diary_by_key = {
         line_to_key(entry): entry
