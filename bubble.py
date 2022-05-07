@@ -9,6 +9,7 @@ def sort_bubble_step(
     step=1,
     do_swap=True,
     reverse=False,
+    use_label=False,
 ):
     left = ratings[index]
     right = ratings[index+step]
@@ -18,6 +19,7 @@ def sort_bubble_step(
         memo,
         verbose=verbose,
         reverse=reverse,
+        use_label=use_label,
     )
     can_swap = comp_result == 1
     if do_swap and can_swap:
@@ -35,6 +37,7 @@ def bubble_pass(
     do_swap=False,
     max_changes=None,
     reverse=False,
+    use_label=False,
 ):
     changes = 0
     if reverse:
@@ -48,6 +51,7 @@ def bubble_pass(
             verbose=verbose,
             do_swap=do_swap,
             reverse=reverse,
+            use_label=use_label,
         )
         if saw_change:
             changes += 1

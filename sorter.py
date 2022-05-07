@@ -219,13 +219,13 @@ def run_group_sorting(ratingsUnsorted):
     return rankingWorstToBest
 
 
-def run_search(rankingWorstToBest, movie):
+def run_search(ranking_worst_to_best, movie, use_label=False):
     left = 0
-    right = len(rankingWorstToBest) - 1
+    right = len(ranking_worst_to_best) - 1
     while left <= right:
         curr = (left + right) // 2
-        curr_movie = rankingWorstToBest[curr]
-        comp_result = rating_sorter(movie, curr_movie, memo)
+        curr_movie = ranking_worst_to_best[curr]
+        comp_result = rating_sorter(movie, curr_movie, memo, use_label=use_label)
         print(f"Searching... {left}|{curr}|{right} -> {comp_result}")
         if comp_result == 1:
             left = curr + 1
@@ -236,23 +236,23 @@ def run_search(rankingWorstToBest, movie):
     return curr
 
 
-def run_missing_insert(ratingsUnsorted, rankingWorstToBest, insert=True):
-    ratingsByKey = {
+def run_missing_insert(ratings_unsorted, ranking_worst_to_best, insert=True):
+    ratings_by_key = {
         rating_to_key(rating): rating
-        for rating in ratingsUnsorted
+        for rating in ratings_unsorted
     }
-    rankingsByKey = {
+    rankings_by_key = {
         ranked_to_key(ranking): ranking
-        for ranking in rankingWorstToBest
+        for ranking in ranking_worst_to_best
     }
-    ratingKeys = frozenset(ratingsByKey.keys())
-    rankingKeys = frozenset(rankingsByKey.keys())
-    missingKeys = ratingKeys - rankingKeys
-    for missingKey in missingKeys:
-        missingMovie = ratingsByKey[missingKey]
-        missingIndex = run_search(rankingWorstToBest, missingMovie)
+    rating_keys = frozenset(ratings_by_key.keys())
+    ranking_keys = frozenset(rankings_by_key.keys())
+    missing_keys = rating_keys - ranking_keys
+    for missing_key in missing_keys:
+        missing_movie = ratings_by_key[missing_key]
+        missing_index = run_search(ranking_worst_to_best, missing_movie)
         if insert:
-            rankingWorstToBest.insert(missingIndex, missingMovie)
+            ranking_worst_to_best.insert(missing_index, missing_movie)
 
 
 def run_fix_multi_loop(
@@ -322,7 +322,7 @@ def run_fix_first_loop(memo, rankings, max_depth=3):
                     memo,
                     movie_key=movie_key,
                 )
-                run_bubble_sorting(memo, rankingWorstToBest)
+                run_bubble_sorting(memo, ranking_worst_to_best)
                 break
 
 
@@ -367,7 +367,7 @@ def run_fix_all_loops(
                 sort_key=sort_key,
                 sort_reversed=sort_reversed,
             )
-            run_bubble_sorting(memo, rankingWorstToBest)
+            run_bubble_sorting(memo, ranking_worst_to_best)
 
 
 def run_fix_loop(memo, ranking, max_depth=3):
@@ -386,7 +386,7 @@ def run_fix_loop(memo, ranking, max_depth=3):
             label = build_movie_label(ranking)
             print(f"{len(loops_higher_than)} loops for {label}\n")
             run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
-            run_bubble_sorting(memo, rankingWorstToBest)
+            run_bubble_sorting(memo, ranking_worst_to_best)
 
 
 def run_fix_memo(memo, rating_key, rankingsByKey=None):
@@ -435,21 +435,21 @@ def run_fix_memo(memo, rating_key, rankingsByKey=None):
 
 def reload_all(*, base_dir):
     # LOAD RATINGS
-    ratingsFile = f"{base_dir}/ratings.csv"
-    with open(ratingsFile, 'r') as file:
-        ratingsUnsorted = load_ratings(file)
+    ratings_file = f"{base_dir}/ratings.csv"
+    with open(ratings_file, 'r') as file:
+        ratings_unsorted = load_ratings(file)
     # LOAD RANKINGS
-    rankingsFile = f"{base_dir}/rankings.csv"
-    with open(rankingsFile, 'r') as file:
-        rankingsBestToWorst = load_rankings(file, ratingsUnsorted)
-    rankingWorstToBest = list(reversed(rankingsBestToWorst))
+    rankings_file = f"{base_dir}/rankings.csv"
+    with open(rankings_file, 'r') as file:
+        rankings_best_to_worst = load_rankings(file, ratings_unsorted)
+    rankings_worst_to_best = list(reversed(rankings_best_to_worst))
     # LOAD DIARY
-    rankingsFile = f"{base_dir}/diary.csv"
-    with open(rankingsFile, 'r') as file:
+    rankings_file = f"{base_dir}/diary.csv"
+    with open(rankings_file, 'r') as file:
         diary_entries = load_diary(file)
     return {
-        "ratings": ratingsUnsorted,
-        "rankings": rankingWorstToBest,
+        "ratings": ratings_unsorted,
+        "rankings": rankings_worst_to_best,
         "diary_entries": diary_entries,
     }
 
@@ -547,17 +547,17 @@ def save_all(
 
 # RELOAD
 data = reload_all(base_dir=baseDir)
-ratingsUnsorted = data["ratings"]
-rankingWorstToBest = data["rankings"]
+ratings_unsorted = data["ratings"]
+ranking_worst_to_best = data["rankings"]
 diary_entries = data["diary_entries"]
 
 
 # INSERT MISSING RATINGS
-run_missing_insert(ratingsUnsorted, rankingWorstToBest)
+run_missing_insert(ratings_unsorted, ranking_worst_to_best)
 
 
 # RUN BUBBLE SORTING
-run_bubble_sorting(memo, rankingWorstToBest, verbose=False)
+run_bubble_sorting(memo, ranking_worst_to_best, verbose=False)
 
 
 # UPDATE DIARY
@@ -565,13 +565,13 @@ pprint(sorted(reload_diary(
     diary_entries=diary_entries,
     stars_worst_to_best=stars_worst_to_best,
     rating_curve=rating_curve,
-    ranking_worst_to_best=rankingWorstToBest,
+    ranking_worst_to_best=ranking_worst_to_best,
 )))
 
 
 # SAVE
 save_all(
-    rankings_worst_to_best=rankingWorstToBest,
+    rankings_worst_to_best=ranking_worst_to_best,
     stars_worst_to_best=stars_worst_to_best,
     rating_curve=rating_curve,
     base_dir=baseDir,
@@ -580,7 +580,7 @@ save_all(
 
 
 # FIX LOOPs
-rankingBestToWorst = list(reversed(rankingWorstToBest))
+rankingBestToWorst = list(reversed(ranking_worst_to_best))
 run_fix_all_loops(
     memo,
     rankingBestToWorst,
@@ -592,7 +592,7 @@ run_fix_all_loops(
     # sort_reversed=True,
 )
 
-rankingBestToWorst = list(reversed(rankingWorstToBest))
+rankingBestToWorst = list(reversed(ranking_worst_to_best))
 run_fix_all_loops(
     memo,
     rankingBestToWorst,
@@ -605,7 +605,7 @@ run_fix_all_loops(
 
 
 # BUBBLE
-rankingBestToWorst = list(reversed(rankingWorstToBest))
+rankingBestToWorst = list(reversed(ranking_worst_to_best))
 changes = True
 while changes:
     for step in range(2, 20, 1):
@@ -615,12 +615,13 @@ while changes:
             print("...bubble pass")
             changes = bubble_pass(
                 memo,
-                rankingWorstToBest,
+                ranking_worst_to_best,
                 step=step,
                 do_swap=False,
                 max_changes=1,
                 reverse=True,
                 verbose=False,
+                use_label=True,
             )
             print("...fix loops")
             run_fix_all_loops(
@@ -638,7 +639,7 @@ while changes:
 # LOOP MEMO
 rankingsByKey = {
     ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
+    for ranking in ranking_worst_to_best
 }
 loop_memo_key = "Incredibles 2 (2018)"
 print_memo(memo, loop_memo_key, rankingsByKey)
@@ -649,16 +650,16 @@ rating_sorter(left, right, memo)
 
 
 # RUN GROUP SORTING
-rankingWorstToBest = run_group_sorting(ratingsUnsorted)
+ranking_worst_to_best = run_group_sorting(ratings_unsorted)
 rankingsByKey = {
     ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
+    for ranking in ranking_worst_to_best
 }
 
 
 # DECADE GROUPING
 count_min = 10
-decadesBestToWorst = build_decade_grouping(rankingWorstToBest=rankingWorstToBest)
+decadesBestToWorst = build_decade_grouping(rankingWorstToBest=ranking_worst_to_best)
 for decade in decadesBestToWorst:
     movies = decadesBestToWorst[decade]["movies"]
     print(decade)
@@ -697,28 +698,28 @@ print_memo(memo, largestKey)
 # REINSERT
 key_to_reinsert = "Oldboy (2003)"
 
-rankingBestToWorst = list(reversed(rankingWorstToBest))
+rankingBestToWorst = list(reversed(ranking_worst_to_best))
 rankingsByKey = {
     ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
+    for ranking in ranking_worst_to_best
 }
 ranking_to_reinsert = rankingsByKey[key_to_reinsert]
 if ranking_to_reinsert:
-    index = len(rankingWorstToBest) - ranking_to_reinsert["Position"]
-    if rankingWorstToBest[index]["Key"] == key_to_reinsert:
-        del rankingWorstToBest[index]
+    index = len(ranking_worst_to_best) - ranking_to_reinsert["Position"]
+    if ranking_worst_to_best[index]["Key"] == key_to_reinsert:
+        del ranking_worst_to_best[index]
         print(f"deleting {key_to_reinsert}")
     else:
         print(f"missing {key_to_reinsert}")
 
 clear_memo(memo, key_to_reinsert)
-run_missing_insert(ratingsUnsorted, rankingWorstToBest)
+run_missing_insert(ratings_unsorted, ranking_worst_to_best)
 
 
 # UTILS
 rankingsByKey = {
     ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
+    for ranking in ranking_worst_to_best
 }
 
 clear_memo(memo, "Mean Girls (2004)")
@@ -749,7 +750,7 @@ run_fix_loop(
 ###
 rankingsByKey = {
     ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
+    for ranking in ranking_worst_to_best
 }
 entries_by_tags = {
     k: sorted(g, key=itemgetter("Key"))
@@ -800,7 +801,7 @@ run_fix_all_loops(
 ###
 rankingsByKey = {
     ranked_to_key(ranking): ranking
-    for ranking in rankingWorstToBest
+    for ranking in ranking_worst_to_best
 }
 entries_by_month = {
     k: sorted(g, key=itemgetter("Key"))
@@ -851,7 +852,7 @@ run_fix_all_loops(
 delta_targets = target_tag_entries
 delta_targets = target_month_entries
 
-rankingBestToWorst = list(reversed(rankingWorstToBest))
+rankingBestToWorst = list(reversed(ranking_worst_to_best))
 delta_targets = rankingBestToWorst
 
 rankedDeltas = filter(lambda x: x.get("RatingDelta", True), delta_targets)

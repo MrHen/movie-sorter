@@ -2,6 +2,7 @@ import csv
 
 from functools import cmp_to_key
 from operator import itemgetter
+from labels import build_movie_label
 
 from prompt import prompt_for_winner
 
@@ -30,26 +31,36 @@ def load_ratings(file):
     return sorted(ratings, key=itemgetter("Rating"))
 
 
-def rating_sorter(a, b, memo, verbose=True, reverse=False):
+def rating_sorter(a, b, memo, verbose=True, reverse=False, use_label=False):
     a_key = rating_to_key(a)
     b_key = rating_to_key(b)
+    if use_label:
+        a_label = build_movie_label(a)
+        b_label = build_movie_label(b)
+    else:
+        a_label = a_key
+        b_label = b_key
     if a_key == b_key:
         return 0
     memo_key = frozenset({a_key, b_key})
     if memo_key in memo:
-        winner = memo[memo_key]
+        winner_key = memo[memo_key]
         if verbose:
-            print(f"\tFound previous:\t {a_key}\t vs {b_key}\t => {winner}")
+            print(f"\tFound previous:\t {a_label}\t vs {b_label}\t => {winner_key}")
     else:
-        winner = prompt_for_winner(a_key, b_key)
-        memo[memo_key] = winner
-    if a_key == winner:
+        winner_label = prompt_for_winner(a_label, b_label)
+        if winner_label == a_label:
+            winner_key = a_key
+        else:
+            winner_key = b_key
+        memo[memo_key] = winner_key
+    if a_key == winner_key:
         return -1 if reverse else 1
-    elif b_key == winner:
+    elif b_key == winner_key:
         return 1 if reverse else -1
     else:
         return 0
 
 
-def rating_cmp(memo, verbose=True):
-    return cmp_to_key(lambda a, b: rating_sorter(a, b, memo, verbose=verbose))
+def rating_cmp(memo, verbose=True, use_label=False):
+    return cmp_to_key(lambda a, b: rating_sorter(a, b, memo, verbose=verbose, use_label=use_label))
