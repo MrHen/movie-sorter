@@ -1,7 +1,7 @@
 import csv
 from pprint import pprint
 
-voting_file = "voting/Season 5 Week 2 Voting.csv"
+voting_file = "voting/Season 5 Week 3 Voting.csv"
 with open(voting_file, newline="") as file:
     reader = csv.DictReader(file)
     votes = [
