@@ -722,7 +722,7 @@ rankingsByKey = {
 
 clear_memo(memo, "Mean Girls (2004)")
 reverse_memo(memo, "Leprechaun: Origins (2014)", "Leprechaun: Back 2 tha Hood (2003)")
-print_memo(memo, "Annihilation (2018)", rankingsByKey)
+print_memo(memo, "Midsommar (2019)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
@@ -867,4 +867,3 @@ for movie in rankedDeltas:
         delta = ' '
     label = build_movie_label(movie, position_prefix=delta)
     print(f"{label}\t changed from {movie.get('RatingPrev', '-')}\t to {movie.get('RatingCurr', '-')}")
-
