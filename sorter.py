@@ -159,9 +159,7 @@ def build_cascade(higher, lower, memoKey):
 
 def build_decade_grouping(
     *,
-    rankingWorstToBest,
-    count_min=10,
-    count_max=25,
+    ranking_worst_to_best,
 ):
     ignoreStars = {
         "0.5",
@@ -172,21 +170,19 @@ def build_decade_grouping(
         "3",
         "3.5",
     }
-    rankingBestToWorst = list(reversed(rankingWorstToBest))
-    rankingsByDecade = sorted(rankingBestToWorst, key=itemgetter("Decade", "Position"))
-    count_min = 10
-    count_max = 25
+    rankingBestToWorst = list(reversed(ranking_worst_to_best))
+    rankingsWithoutIgnored = filter(lambda movie: movie["Rating"] not in ignoreStars, rankingBestToWorst)
+    rankingsByDecade = sorted(rankingsWithoutIgnored, key=itemgetter("Decade", "Position"))
     decadesBestToWorst = {
         k: {
             "decade": k,
             "movies": [
                 movie
                 for movie in g
-                if movie["Rating"] not in ignoreStars
-            ][:count_max],
+                # if movie["Rating"] not in ignoreStars
+            ],
         }
         for k, g in groupby(rankingsByDecade, key=itemgetter("Decade"))
-        if len(g) >= count_min
     }
     return decadesBestToWorst
 
@@ -659,14 +655,16 @@ rankingsByKey = {
 
 # DECADE GROUPING
 count_min = 10
-decadesBestToWorst = build_decade_grouping(rankingWorstToBest=ranking_worst_to_best)
-for decade in decadesBestToWorst:
-    movies = decadesBestToWorst[decade]["movies"]
-    print(decade)
-    pprint([
-        movie["Key"]
-        for movie in movies
-    ])
+count_max = 25
+decades_best_to_worst = build_decade_grouping(ranking_worst_to_best=ranking_worst_to_best)
+for decade in decades_best_to_worst:
+    movies = decades_best_to_worst[decade]["movies"][:count_max]
+    if len(movies) >= count_min:
+        print(decade)
+        pprint([
+            movie["Key"]
+            for movie in movies
+        ])
 
 print(dedent(
     f"""
@@ -770,6 +768,9 @@ entries_by_tags = {
         key=itemgetter("Tag"),
     )
 }
+
+tags = set(entries_by_tags.keys()) - set(["ignore-ranking", "profile"])
+pprint(tags)
 
 target_tag = "marathon-tarantino"
 target_tag = "marathon-pixar"
