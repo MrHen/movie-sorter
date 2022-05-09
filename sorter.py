@@ -775,6 +775,7 @@ target_tag = "marathon-tarantino"
 target_tag = "marathon-pixar"
 target_tag = "marathon-leprechaun"
 target_tag = "marathon-highlander"
+target_tag = "movie-club"
 target_tag_entries = sorted(
     [
         rankingsByKey.get(entry["Key"], entry)
