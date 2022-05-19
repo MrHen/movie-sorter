@@ -20,7 +20,7 @@ for (let header of headers) {
 
 // FILM LIST COMPARISON
 titles_a = []
-headers = document.querySelectorAll(".listitem .poster")
+headers = document.querySelectorAll(".listitem .poster, .poster-container .poster")
 for (let header of headers) {
     titles_a.push(header.attributes["data-film-id"].textContent)
 }
@@ -28,7 +28,7 @@ JSON.stringify(titles_a)
 
 titles_a = JSON.parse()
 
-headers = document.querySelectorAll(".listitem .poster")
+headers = document.querySelectorAll(".listitem .poster, .poster-container .poster")
 for (let header of headers) {
     if (titles_a.includes(header.attributes["data-film-id"].textContent)) {
         header.style = "opacity: 0.1;"
