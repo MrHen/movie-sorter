@@ -72,7 +72,9 @@ def prompt_for_segments(segments, movie_key=None):
     return response
 
 
-def trunc_string(movie, length=35):
+def trunc_string(movie, length=35, length_backward=15):
     if len(movie) > length:
-        return movie[:length-3]+'...'
+        start = length - length_backward - 3
+        end = length_backward
+        return movie[:start]+'...'+movie[-end:]
     return movie
