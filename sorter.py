@@ -14,6 +14,7 @@ from labels import build_movie_label
 from rankings import load_rankings, ranked_to_key, write_rankings
 from ratings import load_ratings, rating_sorter, rating_to_key, rating_cmp
 from prompt import prompt_for_loop, prompt_for_segments, prompt_for_winner
+from tags import group_diaries_by_month, group_diary_by_tag, rank_diary_by_subject
 from thresholds import build_description, build_thresholds
 
 baseDir = constants.BASE_DIR
@@ -332,6 +333,7 @@ def run_fix_all_loops(
     sort_reversed=False,
 ):
     all_loops = True
+    saw_changes = False
     while all_loops:
         print("Finding next batch of loops...")
         comparisons = build_comparisons(memo)
@@ -345,6 +347,7 @@ def run_fix_all_loops(
                 max_depth=max_depth,
             )
             if loops_higher_than:
+                saw_changes = True
                 first_ranking = first_ranking or ranking
                 label = build_movie_label(ranking)
                 print(f"Found {len(loops_higher_than)} loops for {label}")
@@ -364,6 +367,7 @@ def run_fix_all_loops(
                 sort_reversed=sort_reversed,
             )
             run_bubble_sorting(memo, ranking_worst_to_best)
+    return saw_changes
 
 
 def run_fix_loop(memo, ranking, max_depth=3):
@@ -746,44 +750,47 @@ run_fix_loop(
 ###
 # TAG LISTS
 ###
-rankingsByKey = {
-    ranked_to_key(ranking): ranking
-    for ranking in ranking_worst_to_best
-}
-entries_by_tags = {
-    k: sorted(g, key=itemgetter("Key"))
-    for k, g in groupby(
-        sorted(
-            [
-                {
-                    "Key": entry.get("Key"),
-                    "Tag": tag,
-                }
-                for entry in diary_entries
-                if entry.get("Tags")
-                for tag in entry.get("Tags")
-            ],
-            key=itemgetter("Tag")
-        ),
-        key=itemgetter("Tag"),
-    )
-}
+entries_by_tag = group_diary_by_tag(diary_entries=diary_entries)
 
-tags = set(entries_by_tags.keys()) - set(["ignore-ranking", "profile"])
+tags = set(entries_by_tag.keys()) - set(["ignore-ranking", "profile", "to-review"])
+tags = sorted(tags)
 pprint(tags)
 
-target_tag = "marathon-tarantino"
+for target_tag in tags:
+    saw_changes = True
+    print(f"Starting tag ranking for {target_tag}")
+    while saw_changes:
+        print("...rank entries")
+        target_tag_entries = rank_diary_by_subject(
+            memo=memo,
+            ranking_worst_to_best=ranking_worst_to_best,
+            entries_by_subject=entries_by_tag,
+            target_subject=target_tag,
+        )
+        print("...fix loops")
+        saw_changes = run_fix_all_loops(
+            memo,
+            rankingBestToWorst,
+            max_depth=3,
+            max_segments=20,
+            max_loops=100,
+            # max_loops=None,
+            # sort_key="count",
+            # sort_reversed=True,
+        )
+    print(f"...finished {target_tag}\n")
+
 target_tag = "marathon-pixar"
 target_tag = "marathon-leprechaun"
 target_tag = "marathon-highlander"
 target_tag = "movie-club"
-target_tag_entries = sorted(
-    [
-        rankingsByKey.get(entry["Key"], entry)
-        for entry in entries_by_tags[target_tag]
-    ],
-    key=rating_cmp(memo),
-    reverse=True,
+target_tag = "marathon-tarantino"
+
+target_tag_entries = rank_diary_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=entries_by_tag,
+    target_subject=target_tag,
 )
 
 print("\n" + "\n".join([
@@ -801,36 +808,19 @@ run_fix_all_loops(
 ###
 # MONTHLY LISTS
 ###
-rankingsByKey = {
-    ranked_to_key(ranking): ranking
-    for ranking in ranking_worst_to_best
-}
-entries_by_month = {
-    k: sorted(g, key=itemgetter("Key"))
-    for k, g in groupby(
-        sorted(
-            [
-                entry
-                for entry in diary_entries
-                if entry.get("Watched Month")
-                if "ignore-ranking" not in (entry.get("Tags") or [])
-            ],
-            key=itemgetter("Watched Month")
-        ),
-        key=itemgetter("Watched Month"),
-    )
-}
+entries_by_month = group_diaries_by_month(diary_entries=diary_entries)
 
-target_month = "2022-04"
-target_month_entries = [
-    rankingsByKey.get(entry["Key"], entry)
-    for entry in entries_by_month[target_month]
-]
-target_month_entries = sorted(
-    target_month_entries,
-    # key=rating_cmp(memo),
-    # reverse=True,
-    key=itemgetter("Position")
+months = sorted(set(entries_by_month.keys()))
+pprint(months)
+
+target_month = months[-1]
+
+target_month_entries = rank_diary_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=entries_by_month,
+    target_subject=target_month,
+    # use_position=True,
 )
 
 print("\n" + "\n".join([
