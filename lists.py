@@ -104,3 +104,17 @@ merged = [
 write_stats_combo(movies=merged[:1000], filename="stats_combo_a.csv")
 write_stats_combo(movies=merged[1000:2000], filename="stats_combo_b.csv")
 write_stats_combo(movies=merged[2000:], filename="stats_combo_c.csv")
+
+"""
+removeBatch = async function (size, timeout=200) {
+    removes = Array.from(document.getElementsByClassName('list-item-remove'));
+    removes = removes.splice(-size).reverse();
+    for (const remove of removes) {
+        console.log(remove);
+        remove.click();
+        await new Promise(r => setTimeout(r, timeout));
+    }
+    console.log("Done.");
+}
+removeBatch(500);
+"""
