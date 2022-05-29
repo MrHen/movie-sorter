@@ -814,6 +814,32 @@ entries_by_month = group_diaries_by_month(diary_entries=diary_entries)
 months = sorted(set(entries_by_month.keys()))
 pprint(months)
 
+
+for target_month in reversed(months):
+    saw_changes = True
+    print(f"Starting month ranking for {target_month}")
+    while saw_changes:
+        print("...rank entries")
+        target_month_entries = rank_diary_by_subject(
+            memo=memo,
+            ranking_worst_to_best=ranking_worst_to_best,
+            entries_by_subject=entries_by_month,
+            target_subject=target_month,
+        )
+        print("...fix loops")
+        saw_changes = run_fix_all_loops(
+            memo,
+            rankingBestToWorst,
+            max_depth=3,
+            max_segments=20,
+            max_loops=100,
+            # max_loops=None,
+            # sort_key="count",
+            # sort_reversed=True,
+        )
+    print(f"...finished {target_month}\n")
+
+
 target_month = months[-1]
 
 target_month_entries = rank_diary_by_subject(
