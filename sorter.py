@@ -760,14 +760,14 @@ for target_tag in tags:
     saw_changes = True
     print(f"Starting tag ranking for {target_tag}")
     while saw_changes:
-        print("...rank entries")
+        print(f"...rank entries for {target_tag}")
         target_tag_entries = rank_diary_by_subject(
             memo=memo,
             ranking_worst_to_best=ranking_worst_to_best,
             entries_by_subject=entries_by_tag,
             target_subject=target_tag,
         )
-        print("...fix loops")
+        print(f"...fix loops for {target_tag}")
         saw_changes = run_fix_all_loops(
             memo,
             rankingBestToWorst,
@@ -819,14 +819,14 @@ for target_month in reversed(months):
     saw_changes = True
     print(f"Starting month ranking for {target_month}")
     while saw_changes:
-        print("...rank entries")
+        print(f"...rank entries for {target_month}")
         target_month_entries = rank_diary_by_subject(
             memo=memo,
             ranking_worst_to_best=ranking_worst_to_best,
             entries_by_subject=entries_by_month,
             target_subject=target_month,
         )
-        print("...fix loops")
+        print(f"...fix loops for {target_month}")
         saw_changes = run_fix_all_loops(
             memo,
             rankingBestToWorst,

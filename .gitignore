@@ -139,3 +139,4 @@ lists/*.csv
 stats_*.csv
 
 voting/*
+dir_scan.py
