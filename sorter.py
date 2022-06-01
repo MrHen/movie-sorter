@@ -815,7 +815,7 @@ months = sorted(set(entries_by_month.keys()))
 pprint(months)
 
 
-for target_month in reversed(months):
+for target_month in reversed(months[-3:]):
     saw_changes = True
     print(f"Starting month ranking for {target_month}")
     while saw_changes:
