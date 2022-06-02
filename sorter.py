@@ -1,21 +1,20 @@
-import csv
-
-from textwrap import dedent
-from pprint import pprint
 from itertools import groupby
 from operator import itemgetter
+from pprint import pprint
+from textwrap import dedent
 
 import constants
-from dairy import line_to_key, load_diary
-
-from bubble import run_bubble_sorting, bubble_pass
-from memo import add_memo, analyze_memo, clear_memo, load_memo, print_memo, reverse_memo, write_memo
+from bubble import bubble_pass, run_bubble_sorting
+from files import reload_all, reload_diary, run_search, save_all
 from labels import build_movie_label
-from rankings import load_rankings, ranked_to_key, write_rankings
-from ratings import load_ratings, rating_sorter, rating_to_key, rating_cmp
-from prompt import prompt_for_loop, prompt_for_segments, prompt_for_winner
-from tags import group_diaries_by_month, group_diary_by_tag, rank_diary_by_subject
-from thresholds import build_description, build_thresholds
+from loops import run_fix_all_loops, run_fix_loop
+from memo import (add_memo, analyze_memo, clear_memo, load_memo, print_memo,
+                  reverse_memo)
+from prompt import prompt_for_segments
+from rankings import ranked_to_key
+from ratings import rating_cmp, rating_sorter, rating_to_key
+from tags import (group_diaries_by_month, group_diary_by_tag,
+                  rank_diary_by_subject)
 
 baseDir = constants.BASE_DIR
 
@@ -67,97 +66,6 @@ rating_curve = {
 sum(rating_curve.values())
 
 
-def write_metadata(file, description):
-    fieldnames = ["Date", "Name", "Tags", "URL", "Description"]
-    metadata = {
-        "Date": "2021-10-05",
-        "Name": "Ranked",
-        "Tags": None,
-        "URL": "https://boxd.it/dB32m",
-        "Description": description,
-    }
-    writer = csv.DictWriter(file, fieldnames=fieldnames, extrasaction="ignore")
-    writer.writeheader()
-    writer.writerow(metadata)
-
-
-def build_comparisons(memo):
-    higher_than_key = dict()
-    lower_than_key = dict()
-    for keys, winner in memo.items():
-        keys = list(keys)
-        a_key = keys[0]
-        b_key = keys[1]
-        if a_key == winner:
-            higher = a_key
-            lower = b_key
-        else:
-            higher = b_key
-            lower = a_key
-        if lower not in higher_than_key:
-            higher_than_key[lower] = set()
-        if higher not in lower_than_key:
-            lower_than_key[higher] = set()
-        higher_than_key[lower].add(higher)
-        lower_than_key[higher].add(lower)
-    return {
-        "higher_than_key": higher_than_key,
-        "lower_than_key": lower_than_key,
-    }
-
-
-def aggregate_comparisons(comparisons, key, max_seen=10):
-    finished = set()
-    queue = {key}
-    while queue:
-        if max_seen < 0:
-            break
-        max_seen -= 1
-        curr_key = queue.pop()
-        if curr_key in finished:
-            continue
-        finished.add(curr_key)
-        next_keys = comparisons.get(curr_key, None)
-        for next_key in next_keys:
-            if next_key not in finished and next_key not in queue:
-                print(f"{curr_key}\t >>> {next_key}")
-                queue.add(next_key)
-    finished.remove(key)
-    return finished.union(queue)
-    # comparisons['higher_than_key']['Yi Yi (2000)']
-    # pprint(aggregate_comparisons(comparisons['higher_than_key'], 'Yi Yi (2000)', max_seen=10))
-
-
-def find_comparison_loops(comparisons, curr_key, path=None, max_depth=10):
-    loops = []
-    if max_depth <= 0:
-        return loops
-    path = path or tuple()
-    path = (*path, curr_key,)
-    next_keys = comparisons.get(curr_key, [])
-    for next_key in next_keys:
-        if next_key == path[0]:
-            loops.append((*path, next_key,))
-        else:
-            loops.extend(find_comparison_loops(
-                comparisons,
-                next_key,
-                path=tuple(path),
-                max_depth=max_depth-1,
-            ))
-    return loops
-
-
-def build_cascade(higher, lower, memoKey):
-    remaining = {memoKey}
-    finished = set()
-    while remaining:
-        currKey = remaining.pop()
-        if currKey in finished:
-            continue
-        finished.add(currKey)
-
-
 def build_decade_grouping(
     *,
     ranking_worst_to_best,
@@ -188,11 +96,6 @@ def build_decade_grouping(
     return decadesBestToWorst
 
 
-def fix_loop(memo, loop, delimiter="<<"):
-    fix = prompt_for_loop(loop, delimiter)
-    reverse_memo(memo, loop[fix-1], loop[fix])
-
-
 def run_group_sorting(ratingsUnsorted):
     ratingsGroup = {
         k: {
@@ -216,23 +119,6 @@ def run_group_sorting(ratingsUnsorted):
     return rankingWorstToBest
 
 
-def run_search(ranking_worst_to_best, movie, use_label=False):
-    left = 0
-    right = len(ranking_worst_to_best) - 1
-    while left <= right:
-        curr = (left + right) // 2
-        curr_movie = ranking_worst_to_best[curr]
-        comp_result = rating_sorter(movie, curr_movie, memo, use_label=use_label)
-        print(f"Searching... {left}|{curr}|{right} -> {comp_result}")
-        if comp_result == 1:
-            left = curr + 1
-        elif comp_result == -1:
-            right = curr - 1
-        else:
-            return curr
-    return curr
-
-
 def run_missing_insert(ratings_unsorted, ranking_worst_to_best, insert=True):
     ratings_by_key = {
         rating_to_key(rating): rating
@@ -251,142 +137,6 @@ def run_missing_insert(ratings_unsorted, ranking_worst_to_best, insert=True):
         if insert:
             ranking_worst_to_best.insert(missing_index, missing_movie)
 
-
-def run_fix_multi_loop(
-    loops_higher_than,
-    memo,
-    movie_key=None,
-    sort_key="pos",
-    sort_reversed=False,
-    max_segments=None,
-):
-    loops = set()
-    hits = dict()
-    pairs = list()
-    for loop in loops_higher_than:
-        loop_keys = frozenset(loop)
-        if loop_keys in loops:
-            continue
-        loops.add(loop_keys)
-        left = None
-        right = None
-        for key in loop:
-            if right:
-                left = right
-            if left:
-                right = key
-                pair = tuple([left, right])
-                if pair not in pairs:
-                    pairs.append(pair)
-                hits[pair] = hits.get(pair, 0) + 1
-            else:
-                left = key
-    segments = [
-        {
-            "left": pair[0],
-            "right": pair[1],
-            "count": count,
-            "pos": pairs.index(pair),
-        }
-        for pair, count in hits.items()
-    ]
-    segments = sorted(segments, key=itemgetter(sort_key), reverse=sort_reversed)
-    if max_segments:
-        segments = segments[:max_segments]
-    response = prompt_for_segments(segments, movie_key=movie_key)
-    fix = segments[response]
-    reverse_memo(memo, fix["left"], fix["right"])
-
-
-def run_fix_first_loop(memo, rankings, max_depth=3):
-    loops_higher_than = True
-    while loops_higher_than:
-        print("Finding next loop...")
-        comparisons = build_comparisons(memo)
-        for ranking in rankings:
-            ranking_key = ranked_to_key(ranking)
-            loops_higher_than = find_comparison_loops(
-                comparisons['higher_than_key'],
-                ranking_key,
-                max_depth=max_depth,
-            )
-            if loops_higher_than:
-                movie_key = ranking["Key"]
-                label = build_movie_label(ranking)
-                print(f"{len(loops_higher_than)} loops for {label}\n")
-                run_fix_multi_loop(
-                    loops_higher_than,
-                    memo,
-                    movie_key=movie_key,
-                )
-                run_bubble_sorting(memo, ranking_worst_to_best)
-                break
-
-
-def run_fix_all_loops(
-    memo,
-    rankings,
-    max_depth=3,
-    max_loops=10,
-    max_segments=10,
-    sort_key="pos",
-    sort_reversed=False,
-):
-    all_loops = True
-    saw_changes = False
-    while all_loops:
-        print("Finding next batch of loops...")
-        comparisons = build_comparisons(memo)
-        all_loops = list()
-        first_ranking = None
-        for ranking in rankings:
-            ranking_key = ranked_to_key(ranking)
-            loops_higher_than = find_comparison_loops(
-                comparisons['higher_than_key'],
-                ranking_key,
-                max_depth=max_depth,
-            )
-            if loops_higher_than:
-                saw_changes = True
-                first_ranking = first_ranking or ranking
-                label = build_movie_label(ranking)
-                print(f"Found {len(loops_higher_than)} loops for {label}")
-                all_loops.extend(loops_higher_than)
-                if max_loops and len(all_loops) > max_loops:
-                    break
-        if all_loops:
-            first_ranking_key = ranked_to_key(first_ranking)
-            label = build_movie_label(first_ranking)
-            print(f"\n{len(all_loops)} segments starting at {label}\n")
-            run_fix_multi_loop(
-                all_loops,
-                memo,
-                movie_key=first_ranking_key,
-                max_segments=max_segments,
-                sort_key=sort_key,
-                sort_reversed=sort_reversed,
-            )
-            run_bubble_sorting(memo, ranking_worst_to_best)
-    return saw_changes
-
-
-def run_fix_loop(memo, ranking, max_depth=3):
-    loops_higher_than = True
-    while loops_higher_than:
-        print("Finding next loop...")
-        comparisons = build_comparisons(memo)
-        ranking_key = ranked_to_key(ranking)
-        loops_higher_than = find_comparison_loops(
-            comparisons['higher_than_key'],
-            ranking_key,
-            max_depth=max_depth,
-        )
-        if loops_higher_than:
-            movie_key = ranking["Key"]
-            label = build_movie_label(ranking)
-            print(f"{len(loops_higher_than)} loops for {label}\n")
-            run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
-            run_bubble_sorting(memo, ranking_worst_to_best)
 
 
 def run_fix_memo(memo, rating_key, rankingsByKey=None):
@@ -433,118 +183,6 @@ def run_fix_memo(memo, rating_key, rankingsByKey=None):
     reverse_memo(memo, fix["left"], fix["right"])
 
 
-def reload_all(*, base_dir):
-    # LOAD RATINGS
-    ratings_file = f"{base_dir}/ratings.csv"
-    with open(ratings_file, 'r') as file:
-        ratings_unsorted = load_ratings(file)
-    # LOAD RANKINGS
-    rankings_file = f"{base_dir}/rankings.csv"
-    with open(rankings_file, 'r') as file:
-        rankings_best_to_worst = load_rankings(file, ratings_unsorted)
-    rankings_worst_to_best = list(reversed(rankings_best_to_worst))
-    # LOAD DIARY
-    rankings_file = f"{base_dir}/diary.csv"
-    with open(rankings_file, 'r') as file:
-        diary_entries = load_diary(file)
-    return {
-        "ratings": ratings_unsorted,
-        "rankings": rankings_worst_to_best,
-        "diary_entries": diary_entries,
-    }
-
-
-def reload_diary(
-    *,
-    stars_worst_to_best,
-    rating_curve,
-    ranking_worst_to_best,
-    diary_entries,
-):
-    # PREP THRESHOLDS
-    ranking_best_to_worst = list(reversed(ranking_worst_to_best))
-    total_rated = len(ranking_best_to_worst)
-    ranking_thresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, total_rated)
-    # LOAD DIARY
-    ignore_diary_keys = frozenset({
-        "Anima (2019)",
-        "Squid Game (2021)",
-        "Who Killed Captain Alex? (2010)",
-        "Family Dog (1987)",
-    })
-    diary_by_key = {
-        line_to_key(entry): entry
-        for entry in diary_entries
-    }
-    diary_keys = frozenset(diary_by_key.keys())
-    ranking_keys = frozenset([
-        line_to_key(movie)
-        for movie in ranking_worst_to_best
-    ])
-    missing_keys = diary_keys - ranking_keys - ignore_diary_keys
-    output = []
-    for missing_key in missing_keys:
-        missing_movie = diary_by_key[missing_key]
-        position = run_search(ranking_worst_to_best, missing_movie)
-        position = len(ranking_worst_to_best) - position
-        for threshold in ranking_thresholds:
-            if threshold > position:
-                threshold_label = ranking_thresholds[threshold]
-                print(f"AAA {threshold} vs {position} => {threshold_label}")
-                break
-        output.append(f"{missing_key} => {position} as {threshold_label}")
-    return output
-
-
-def save_all(
-    *,
-    rankings_worst_to_best,
-    stars_worst_to_best,
-    rating_curve,
-    base_dir,
-    memo,
-):
-    # PREP THRESHOLDS
-    rankingBestToWorst = list(reversed(rankings_worst_to_best))
-    totalRated = len(rankingBestToWorst)
-    rankingThresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, totalRated)
-    rankedDescription = build_description(rankingThresholds)
-    print(rankedDescription)
-    # APPLY THRESHOLDS
-    ratingCurr = 5
-    for i in range(0, len(rankingBestToWorst)):
-        item = rankingBestToWorst[i]
-        position = i + 1
-        description = rankingThresholds.get(position, None)
-        item["Position"] = position
-        item["Description"] = description
-        item["RatingCurr"] = str(ratingCurr)
-        item["RatingPrev"] = item["Rating"]
-        item["RatingDelta"] = ratingCurr - float(item["Rating"])
-        if description:
-            ratingCurr -= 0.5
-    # SAVE OUTPUT
-    rankedOutput = [
-        {
-            "Position": movie["Position"],
-            "Name": movie["Name"],
-            "Year": movie["Year"],
-            "URL": movie["Letterboxd URI"],
-            "Description": movie["Description"],
-        }
-        for movie in rankingBestToWorst
-    ]
-    rankingsFile = f"{base_dir}/rankings.csv"
-    with open(rankingsFile, 'w', newline='') as file:
-        # write_metadata(file, rankedDescription)
-        # file.write("\n")
-        write_rankings(file, rankedOutput)
-    # SAVE MEMO
-    if memo:
-        with open(memoFile, 'w', newline='') as file:
-            write_memo(file, memo)
-
-
 # RELOAD
 data = reload_all(base_dir=baseDir)
 ratings_unsorted = data["ratings"]
@@ -562,6 +200,7 @@ run_bubble_sorting(memo, ranking_worst_to_best, verbose=False)
 
 # UPDATE DIARY
 pprint(sorted(reload_diary(
+    memo=memo,
     diary_entries=diary_entries,
     stars_worst_to_best=stars_worst_to_best,
     rating_curve=rating_curve,
@@ -576,14 +215,16 @@ save_all(
     rating_curve=rating_curve,
     base_dir=baseDir,
     memo=memo,
+    memo_file=memoFile,
 )
 
 
 # FIX LOOPs
 rankingBestToWorst = list(reversed(ranking_worst_to_best))
 run_fix_all_loops(
-    memo,
-    rankingBestToWorst,
+    ranking_worst_to_best=ranking_worst_to_best,
+    memo=memo,
+    rankings=rankingBestToWorst,
     max_depth=3,
     max_segments=20,
     max_loops=100,
@@ -594,8 +235,9 @@ run_fix_all_loops(
 
 rankingBestToWorst = list(reversed(ranking_worst_to_best))
 run_fix_all_loops(
-    memo,
-    rankingBestToWorst,
+    ranking_worst_to_best=ranking_worst_to_best,
+    memo=memo,
+    rankings=rankingBestToWorst,
     max_depth=4,
     max_loops=None,
     max_segments=20,
@@ -625,8 +267,9 @@ while changes:
             )
             print("...fix loops")
             run_fix_all_loops(
-                memo,
-                rankingBestToWorst,
+                ranking_worst_to_best=ranking_worst_to_best,
+                memo=memo,
+                rankings=rankingBestToWorst,
                 max_depth=3,
                 max_segments=20,
                 max_loops=100,
@@ -737,8 +380,9 @@ run_fix_memo(
     rankingsByKey,
 )
 run_fix_loop(
-    memo,
-    rankingsByKey["The Good Dinosaur (2015)"],
+    ranking_worst_to_best=ranking_worst_to_best,
+    memo=memo,
+    ranking=rankingsByKey["The Good Dinosaur (2015)"],
     max_depth=5,
 )
 
@@ -769,8 +413,9 @@ for target_tag in tags:
         )
         print(f"...fix loops for {target_tag}")
         saw_changes = run_fix_all_loops(
-            memo,
-            rankingBestToWorst,
+            ranking_worst_to_best=ranking_worst_to_best,
+            memo=memo,
+            rankings=rankingBestToWorst,
             max_depth=3,
             max_segments=20,
             max_loops=100,
@@ -800,8 +445,9 @@ print("\n" + "\n".join([
 ]))
 
 run_fix_all_loops(
-    memo,
-    target_tag_entries,
+    ranking_worst_to_best=ranking_worst_to_best,
+    memo=memo,
+    rankings=target_tag_entries,
     max_depth=3,
 )
 
@@ -828,8 +474,9 @@ for target_month in reversed(months[-3:]):
         )
         print(f"...fix loops for {target_month}")
         saw_changes = run_fix_all_loops(
-            memo,
-            rankingBestToWorst,
+            ranking_worst_to_best=ranking_worst_to_best,
+            memo=memo,
+            rankings=rankingBestToWorst,
             max_depth=3,
             max_segments=20,
             max_loops=100,
@@ -856,8 +503,9 @@ print("\n" + "\n".join([
 ]))
 
 run_fix_all_loops(
-    memo,
-    target_month_entries,
+    ranking_worst_to_best=ranking_worst_to_best,
+    memo=memo,
+    rankings=target_month_entries,
     max_depth=3,
     max_segments=20,
     max_loops=100,
