@@ -133,7 +133,7 @@ def run_missing_insert(ratings_unsorted, ranking_worst_to_best, insert=True):
     missing_keys = rating_keys - ranking_keys
     for missing_key in missing_keys:
         missing_movie = ratings_by_key[missing_key]
-        missing_index = run_search(ranking_worst_to_best, missing_movie)
+        missing_index = run_search(memo, ranking_worst_to_best, missing_movie)
         if insert:
             ranking_worst_to_best.insert(missing_index, missing_movie)
 
