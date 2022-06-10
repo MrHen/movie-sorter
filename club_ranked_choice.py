@@ -3,6 +3,7 @@ from pprint import pprint
 from itertools import groupby
 from operator import itemgetter
 import re
+import random
 
 pick_order = [
     "First Pick",
@@ -12,7 +13,7 @@ pick_order = [
     "Fifth Pick",
 ]
 
-voting_file = "voting/Season 5 Week 7 Voting.csv"
+voting_file = "voting/Season 5 Week 8 Voting.csv"
 with open(voting_file, newline="") as file:
     reader = csv.DictReader(file)
     votes = [
@@ -34,6 +35,10 @@ pivoted = [
 ]
 
 votes_sorted = sorted(pivoted, key=itemgetter("voter", "vote_order"))
+all_movies = {
+    vote['movie']
+    for vote in votes_sorted
+}
 
 votes_grouped = groupby(votes_sorted, key=itemgetter("voter"))
 ranked_input = [
@@ -49,22 +54,26 @@ ranked_input = [
 ]
 
 votes_grouped = groupby(votes_sorted, key=itemgetter("voter"))
-tie_breaker = [
-    "".join([
-        # k,
-        # ":",
-        ">".join([
-            vote["movie"]
-            for vote in g
-        ]),
-    ])
+my_votes = [
+    vote["movie"]
     for k, g in votes_grouped
     if k == 'MrHen'
+    for vote in g
 ]
+others = list(all_movies - set(my_votes))
+random.shuffle(others)
+tie_breaker = "".join([
+    ">".join([
+        *my_votes,
+        *others,
+    ]),
+])
 
 
 print("\n")
 print("\n".join(ranked_input))
 
 print("\n")
-print("\n".join(tie_breaker))
+print(tie_breaker)
+
+# https://accuratedemocracy.com/download/software/calc.html
