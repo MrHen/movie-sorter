@@ -367,7 +367,7 @@ rankingsByKey = {
     for ranking in ranking_worst_to_best
 }
 
-clear_memo(memo, "Mean Girls (2004)")
+clear_memo(memo, "John Dies at the End (2012)")
 reverse_memo(memo, "Leprechaun: Origins (2014)", "Leprechaun: Back 2 tha Hood (2003)")
 print_memo(memo, "Midsommar (2019)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
