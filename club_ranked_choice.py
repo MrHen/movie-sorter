@@ -13,7 +13,7 @@ pick_order = [
     "Fifth Pick",
 ]
 
-voting_file = "voting/Season 5 Week 8 Voting.csv"
+voting_file = "voting/Season 5 Week 9 Voting.csv"
 with open(voting_file, newline="") as file:
     reader = csv.DictReader(file)
     votes = [
