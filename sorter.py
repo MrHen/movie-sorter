@@ -405,25 +405,29 @@ for target_tag in tags:
     saw_changes = True
     print(f"Starting tag ranking for {target_tag}")
     while saw_changes:
+        saw_changes = False
         print(f"...rank entries for {target_tag}")
+        before = len(memo.keys())
         target_tag_entries = rank_diary_by_subject(
             memo=memo,
             ranking_worst_to_best=ranking_worst_to_best,
             entries_by_subject=entries_by_tag,
             target_subject=target_tag,
         )
-        print(f"...fix loops for {target_tag}")
-        saw_changes = run_fix_all_loops(
-            ranking_worst_to_best=ranking_worst_to_best,
-            memo=memo,
-            rankings=rankingBestToWorst,
-            max_depth=3,
-            max_segments=20,
-            max_loops=100,
-            # max_loops=None,
-            # sort_key="count",
-            # sort_reversed=True,
-        )
+        after = len(memo.keys())
+        if after > before:
+            print(f"...fix loops for {target_tag}")
+            saw_changes = run_fix_all_loops(
+                ranking_worst_to_best=ranking_worst_to_best,
+                memo=memo,
+                rankings=rankingBestToWorst,
+                max_depth=3,
+                max_segments=20,
+                max_loops=100,
+                # max_loops=None,
+                # sort_key="count",
+                # sort_reversed=True,
+            )
     print(f"...finished {target_tag}\n")
 
 
@@ -466,29 +470,33 @@ for target_month in reversed(months[-3:]):
     saw_changes = True
     print(f"Starting month ranking for {target_month}")
     while saw_changes:
+        saw_changes = False
         print(f"...rank entries for {target_month}")
+        before = len(memo.keys())
         target_month_entries = rank_diary_by_subject(
             memo=memo,
             ranking_worst_to_best=ranking_worst_to_best,
             entries_by_subject=entries_by_month,
             target_subject=target_month,
         )
-        print(f"...fix loops for {target_month}")
-        saw_changes = run_fix_all_loops(
-            ranking_worst_to_best=ranking_worst_to_best,
-            memo=memo,
-            rankings=rankingBestToWorst,
-            max_depth=3,
-            max_segments=20,
-            max_loops=100,
-            # max_loops=None,
-            # sort_key="count",
-            # sort_reversed=True,
-        )
+        after = len(memo.keys())
+        if after > before:
+            print(f"...fix loops for {target_month}")
+            saw_changes = run_fix_all_loops(
+                ranking_worst_to_best=ranking_worst_to_best,
+                memo=memo,
+                rankings=rankingBestToWorst,
+                max_depth=3,
+                max_segments=20,
+                max_loops=100,
+                # max_loops=None,
+                # sort_key="count",
+                # sort_reversed=True,
+            )
     print(f"...finished {target_month}\n")
 
 
-target_month = months[-1]
+target_month = months[-2]
 
 target_month_entries = rank_diary_by_subject(
     memo=memo,

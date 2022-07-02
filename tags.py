@@ -13,6 +13,7 @@ def rank_diary_by_subject(
     entries_by_subject,
     target_subject,
     use_position=False,
+    verbose=False,
 ):
     key_index = "Key"
     rankingsByKey = {
@@ -31,7 +32,7 @@ def rank_diary_by_subject(
     else:
         target_entries = sorted(
             target_entries,
-            key=rating_cmp(memo),
+            key=rating_cmp(memo, verbose=verbose),
             reverse=True,
         )
     return target_entries
