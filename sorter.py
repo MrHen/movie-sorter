@@ -14,7 +14,7 @@ from prompt import prompt_for_segments
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_sorter, rating_to_key
 from tags import (group_diaries_by_month, group_diary_by_tag,
-                  rank_diary_by_subject)
+                  rank_diary_by_subject, group_rankings_by_decade)
 
 baseDir = constants.BASE_DIR
 
@@ -369,7 +369,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "The Omega Code (1999)")
-reverse_memo(memo, "Double Indemnity (1944)", "Dirty Computer (2018)")
+reverse_memo(memo, "The Green Mile (1999)", "Memories of Murder (2003)")
 print_memo(memo, "Midsommar (2019)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
@@ -420,7 +420,6 @@ for target_tag in tags:
             saw_changes = run_fix_all_loops(
                 ranking_worst_to_best=ranking_worst_to_best,
                 memo=memo,
-                rankings=rankingBestToWorst,
                 max_depth=3,
                 max_segments=20,
                 max_loops=100,
@@ -485,7 +484,6 @@ for target_month in reversed(months[-3:]):
             saw_changes = run_fix_all_loops(
                 ranking_worst_to_best=ranking_worst_to_best,
                 memo=memo,
-                rankings=rankingBestToWorst,
                 max_depth=3,
                 max_segments=20,
                 max_loops=100,
@@ -522,6 +520,44 @@ run_fix_all_loops(
     # sort_key="count",
     # sort_reversed=True,
 )
+
+
+###
+# DECADE LISTS
+###
+movies_by_decade = group_rankings_by_decade(ranking_worst_to_best=ranking_worst_to_best)
+
+decades = sorted(set(movies_by_decade.keys()))
+pprint(decades)
+
+
+for target_decade in decades:
+    saw_changes = True
+    print(f"Starting decade ranking for {target_decade}")
+    while saw_changes:
+        saw_changes = False
+        print(f"...rank movies for {target_decade}")
+        before = len(memo.keys())
+        target_decade_movies = rank_diary_by_subject(
+            memo=memo,
+            ranking_worst_to_best=ranking_worst_to_best,
+            entries_by_subject=movies_by_decade,
+            target_subject=target_decade,
+        )
+        after = len(memo.keys())
+        if after > before:
+            print(f"...fix loops for {target_decade}")
+            saw_changes = run_fix_all_loops(
+                ranking_worst_to_best=ranking_worst_to_best,
+                memo=memo,
+                max_depth=3,
+                max_segments=20,
+                max_loops=100,
+                # max_loops=None,
+                # sort_key="count",
+                # sort_reversed=True,
+            )
+    print(f"...finished {target_decade}\n")
 
 
 # PRINT DELTAS

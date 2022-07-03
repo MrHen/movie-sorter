@@ -88,3 +88,26 @@ def group_diaries_by_month(
         )
     }
     return entries_by_month
+
+
+def group_rankings_by_decade(
+    *,
+    ranking_worst_to_best,
+):
+    ignoreStars = {
+        "0.5",
+        "1",
+        "1.5",
+        "2",
+        "2.5",
+        "3",
+        "3.5",
+    }
+    rankingBestToWorst = list(reversed(ranking_worst_to_best))
+    rankingsWithoutIgnored = filter(lambda movie: movie["Rating"] not in ignoreStars, rankingBestToWorst)
+    rankingsByDecade = sorted(rankingsWithoutIgnored, key=itemgetter("Decade", "Position"))
+    decadesBestToWorst = {
+        k: sorted(g, key=itemgetter("Key"))
+        for k, g in groupby(rankingsByDecade, key=itemgetter("Decade"))
+    }
+    return decadesBestToWorst
