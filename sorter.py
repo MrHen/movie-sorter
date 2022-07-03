@@ -7,10 +7,11 @@ import constants
 from bubble import bubble_pass, run_bubble_sorting
 from files import reload_all, reload_diary, run_search, save_all
 from labels import build_movie_label
+from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
 from loops import run_fix_all_loops, run_fix_loop
 from memo import (add_memo, analyze_memo, clear_memo, load_memo, print_memo,
                   reverse_memo)
-from prompt import prompt_for_segments
+from prompt import prompt_for_segments, trunc_string
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_sorter, rating_to_key
 from tags import (group_diaries_by_month, group_diary_by_tag,
@@ -305,9 +306,11 @@ rankingsByKey = {
 count_min = 10
 count_max = 25
 decades_best_to_worst = build_decade_grouping(ranking_worst_to_best=ranking_worst_to_best)
+lists_by_decade = {}
 for decade in decades_best_to_worst:
     movies = decades_best_to_worst[decade]["movies"][:count_max]
     if len(movies) >= count_min:
+        lists_by_decade[decade] = movies
         print(decade)
         pprint([
             movie["Key"]
@@ -391,6 +394,46 @@ run_fix_loop(
 # Eternal Sunshine of the Spotless Mind (2004)
 # Toy Story (1995)
 # Finding Nemo
+
+###
+# LIST MANIP
+###
+list_names = load_list_names()
+list_data = [
+    load_list(list_name=list_name)
+    for list_name in list_names
+]
+
+for i, list_datum in enumerate(list_data):
+    print(f"{i}: {list_datum['metadata']['Name']}")
+
+for decade, movies in lists_by_decade.items():
+    decade_list = next(filter(lambda list_datum: f'top{decade}' in list_datum['metadata'].get('Tags', ''), list_data), None)
+    if not decade_list:
+        continue
+    if do_lists_match(movies, decade_list['movies']):
+        continue
+    print(f'boo {decade}')
+    print_list_comparison(movies, decade_list['movies'])
+
+
+merged = create_weighted_list(list_data=list_data, tag="stats-tracker", filename=)
+write_file_parts(movies=merged, filename="stats_combo")
+
+"""
+removeBatch = async function (size, timeout=200) {
+    removes = Array.from(document.getElementsByClassName('list-item-remove'));
+    removes = removes.splice(-size).reverse();
+    for (const remove of removes) {
+        console.log(remove);
+        remove.click();
+        await new Promise(r => setTimeout(r, timeout));
+    }
+    console.log("Done.");
+}
+removeBatch(500);
+"""
+
 
 ###
 # TAG LISTS

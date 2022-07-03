@@ -2,6 +2,9 @@ import csv
 import os
 from operator import itemgetter
 
+from prompt import trunc_string
+from rankings import ranked_to_key
+
 LISTS_DIR = 'lists'
 
 
@@ -72,49 +75,68 @@ def write_stats_combo(*, movies, filename):
         writer.writerows(movies)
 
 
-list_names = load_list_names()
-list_data = [
-    load_list(list_name=list_name)
-    for list_name in list_names
-]
-stats_combo = [
-    list_datum
-    for list_datum in list_data
-    if list_datum["metadata"]["Tags"] == "stats-tracker"
-]
+def write_file_parts(*, movies, filename, batch_size=1000):
+    for i in range(0, len(movies), batch_size):
+        write_stats_combo(movies=movies[i:i+batch_size], filename=f"{filename}_{i:04}.csv")
 
 
-merged = merge_lists(lists=stats_combo)
-merged = multisort(
-    list(merged),
-    (
-        ('Weight', True),
-        ('Year', False),
-        ('Name', False),
-    ),
-)
-merged = [
-    {
-        **merged[i],
-        "Position": i + 1,
+def create_weighted_list(*, list_data, tag, filename):
+    stats_combo = [
+        list_datum
+        for list_datum in list_data
+        if list_datum["metadata"]["Tags"] == tag
+    ]
+    merged = merge_lists(lists=stats_combo)
+    merged = multisort(
+        list(merged),
+        (
+            ('Weight', True),
+            ('Year', False),
+            ('Name', False),
+        ),
+    )
+    merged = [
+        {
+            **merged[i],
+            "Position": i + 1,
 
-    }
-    for i in range(0, len(merged))
-]
-write_stats_combo(movies=merged[:1000], filename="stats_combo_a.csv")
-write_stats_combo(movies=merged[1000:2000], filename="stats_combo_b.csv")
-write_stats_combo(movies=merged[2000:], filename="stats_combo_c.csv")
+        }
+        for i in range(0, len(merged))
+    ]
+    return merged
 
-"""
-removeBatch = async function (size, timeout=200) {
-    removes = Array.from(document.getElementsByClassName('list-item-remove'));
-    removes = removes.splice(-size).reverse();
-    for (const remove of removes) {
-        console.log(remove);
-        remove.click();
-        await new Promise(r => setTimeout(r, timeout));
-    }
-    console.log("Done.");
-}
-removeBatch(500);
-"""
+
+def print_list_comparison(a, b):
+    b_keys = [
+        ranked_to_key(movie)
+        for movie in b
+    ]
+    a_keys = [
+        ranked_to_key(movie)
+        for movie in a
+    ]
+    max_len = max(len(a_keys), len(b_keys))
+    for i in range(0, max_len):
+        index = i+1
+        if i < len(a):
+            a_key = a_keys[i]
+        else:
+            a_key = '-'
+        if i < len(b):
+            b_key = b_keys[i]
+        else:
+            b_key = '-'
+        match = a_key == b_key
+        print(f"#{index}\t {match}\t {trunc_string(a_key)}\t {trunc_string(b_key)}")
+
+
+def do_lists_match(a, b):
+    b_keys = [
+        ranked_to_key(movie)
+        for movie in b
+    ]
+    a_keys = [
+        ranked_to_key(movie)
+        for movie in a
+    ]
+    return b_keys == a_keys
