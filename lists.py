@@ -80,7 +80,7 @@ def write_file_parts(*, movies, filename, batch_size=1000):
         write_stats_combo(movies=movies[i:i+batch_size], filename=f"{filename}_{i:04}.csv")
 
 
-def create_weighted_list(*, list_data, tag, filename):
+def create_weighted_list(*, list_data, tag):
     stats_combo = [
         list_datum
         for list_datum in list_data

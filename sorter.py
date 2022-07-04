@@ -417,7 +417,7 @@ for decade, movies in lists_by_decade.items():
     print_list_comparison(movies, decade_list['movies'])
 
 
-merged = create_weighted_list(list_data=list_data, tag="stats-tracker", filename=)
+merged = create_weighted_list(list_data=list_data, tag="stats-tracker")
 write_file_parts(movies=merged, filename="stats_combo")
 
 """
