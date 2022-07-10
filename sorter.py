@@ -15,7 +15,7 @@ from prompt import prompt_for_segments, trunc_string
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_sorter, rating_to_key
 from tags import (group_diaries_by_month, group_diary_by_tag,
-                  rank_diary_by_subject, group_rankings_by_decade)
+                  rank_diary_by_subject, group_rankings_by_decade, run_rank_by_subject)
 
 baseDir = constants.BASE_DIR
 
@@ -120,7 +120,7 @@ def run_group_sorting(ratingsUnsorted):
     return rankingWorstToBest
 
 
-def run_missing_insert(ratings_unsorted, ranking_worst_to_best, insert=True):
+def run_missing_insert(memo, ratings_unsorted, ranking_worst_to_best, insert=True):
     ratings_by_key = {
         rating_to_key(rating): rating
         for rating in ratings_unsorted
@@ -137,6 +137,7 @@ def run_missing_insert(ratings_unsorted, ranking_worst_to_best, insert=True):
         missing_index = run_search(memo, ranking_worst_to_best, missing_movie)
         if insert:
             ranking_worst_to_best.insert(missing_index, missing_movie)
+    run_bubble_sorting(memo, ranking_worst_to_best, verbose=False)
 
 
 
@@ -192,11 +193,7 @@ diary_entries = data["diary_entries"]
 
 
 # INSERT MISSING RATINGS
-run_missing_insert(ratings_unsorted, ranking_worst_to_best)
-
-
-# RUN BUBBLE SORTING
-run_bubble_sorting(memo, ranking_worst_to_best, verbose=False)
+run_missing_insert(memo, ratings_unsorted, ranking_worst_to_best)
 
 
 # UPDATE DIARY
@@ -371,9 +368,9 @@ rankingsByKey = {
     for ranking in ranking_worst_to_best
 }
 
-clear_memo(memo, "The Omega Code (1999)")
-reverse_memo(memo, "The Green Mile (1999)", "Memories of Murder (2003)")
-print_memo(memo, "Midsommar (2019)", rankingsByKey)
+clear_memo(memo, "Drive (2011)")
+reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
+print_memo(memo, "Naqoyqatsi (2002)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
@@ -444,34 +441,12 @@ tags = set(entries_by_tag.keys()) - set(["ignore-ranking", "profile", "to-review
 tags = sorted(tags)
 pprint(tags)
 
-for target_tag in tags:
-    saw_changes = True
-    print(f"Starting tag ranking for {target_tag}")
-    while saw_changes:
-        saw_changes = False
-        print(f"...rank entries for {target_tag}")
-        before = len(memo.keys())
-        target_tag_entries = rank_diary_by_subject(
-            memo=memo,
-            ranking_worst_to_best=ranking_worst_to_best,
-            entries_by_subject=entries_by_tag,
-            target_subject=target_tag,
-        )
-        after = len(memo.keys())
-        if after > before:
-            print(f"...fix loops for {target_tag}")
-            saw_changes = run_fix_all_loops(
-                ranking_worst_to_best=ranking_worst_to_best,
-                memo=memo,
-                max_depth=3,
-                max_segments=20,
-                max_loops=100,
-                # max_loops=None,
-                # sort_key="count",
-                # sort_reversed=True,
-            )
-    print(f"...finished {target_tag}\n")
-
+run_rank_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=entries_by_tag,
+    subjects=tags,
+)
 
 target_tag = "marathon-pixar"
 target_tag = "marathon-leprechaun"
@@ -507,35 +482,12 @@ entries_by_month = group_diaries_by_month(diary_entries=diary_entries)
 months = sorted(set(entries_by_month.keys()))
 pprint(months)
 
-
-for target_month in reversed(months[-3:]):
-    saw_changes = True
-    print(f"Starting month ranking for {target_month}")
-    while saw_changes:
-        saw_changes = False
-        print(f"...rank entries for {target_month}")
-        before = len(memo.keys())
-        target_month_entries = rank_diary_by_subject(
-            memo=memo,
-            ranking_worst_to_best=ranking_worst_to_best,
-            entries_by_subject=entries_by_month,
-            target_subject=target_month,
-        )
-        after = len(memo.keys())
-        if after > before:
-            print(f"...fix loops for {target_month}")
-            saw_changes = run_fix_all_loops(
-                ranking_worst_to_best=ranking_worst_to_best,
-                memo=memo,
-                max_depth=3,
-                max_segments=20,
-                max_loops=100,
-                # max_loops=None,
-                # sort_key="count",
-                # sort_reversed=True,
-            )
-    print(f"...finished {target_month}\n")
-
+run_rank_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=entries_by_month,
+    subjects=months[-3:],
+)
 
 target_month = months[-2]
 
@@ -573,35 +525,12 @@ movies_by_decade = group_rankings_by_decade(ranking_worst_to_best=ranking_worst_
 decades = sorted(set(movies_by_decade.keys()))
 pprint(decades)
 
-
-for target_decade in decades:
-    saw_changes = True
-    print(f"Starting decade ranking for {target_decade}")
-    while saw_changes:
-        saw_changes = False
-        print(f"...rank movies for {target_decade}")
-        before = len(memo.keys())
-        target_decade_movies = rank_diary_by_subject(
-            memo=memo,
-            ranking_worst_to_best=ranking_worst_to_best,
-            entries_by_subject=movies_by_decade,
-            target_subject=target_decade,
-        )
-        after = len(memo.keys())
-        if after > before:
-            print(f"...fix loops for {target_decade}")
-            saw_changes = run_fix_all_loops(
-                ranking_worst_to_best=ranking_worst_to_best,
-                memo=memo,
-                max_depth=3,
-                max_segments=20,
-                max_loops=100,
-                # max_loops=None,
-                # sort_key="count",
-                # sort_reversed=True,
-            )
-    print(f"...finished {target_decade}\n")
-
+run_rank_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=movies_by_decade,
+    subjects=decades,
+)
 
 # PRINT DELTAS
 delta_targets = target_tag_entries

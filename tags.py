@@ -2,6 +2,7 @@ from itertools import groupby
 from operator import itemgetter
 from pprint import pprint
 from labels import build_movie_label
+from loops import run_fix_all_loops
 from rankings import ranked_to_key
 from ratings import rating_cmp
 
@@ -111,3 +112,39 @@ def group_rankings_by_decade(
         for k, g in groupby(rankingsByDecade, key=itemgetter("Decade"))
     }
     return decadesBestToWorst
+
+
+def run_rank_by_subject(
+    *,
+    memo,
+    ranking_worst_to_best,
+    entries_by_subject,
+    subjects,
+):
+    for target_subject in subjects:
+        saw_changes = True
+        print(f"Starting ranking for {target_subject}")
+        while saw_changes:
+            saw_changes = False
+            print(f"...rank entries for {target_subject}")
+            before = len(memo.keys())
+            rank_diary_by_subject(
+                memo=memo,
+                ranking_worst_to_best=ranking_worst_to_best,
+                entries_by_subject=entries_by_subject,
+                target_subject=target_subject,
+            )
+            after = len(memo.keys())
+            if after > before:
+                print(f"...fix loops for {target_subject}")
+                saw_changes = run_fix_all_loops(
+                    ranking_worst_to_best=ranking_worst_to_best,
+                    memo=memo,
+                    max_depth=3,
+                    max_segments=20,
+                    max_loops=100,
+                    # max_loops=None,
+                    # sort_key="count",
+                    # sort_reversed=True,
+                )
+        print(f"...finished {target_subject}\n")
