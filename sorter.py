@@ -433,20 +433,40 @@ removeBatch(500);
 
 
 ###
-# TAG LISTS
+# SUBJECTS
 ###
 entries_by_tag = group_diary_by_tag(diary_entries=diary_entries)
-
 tags = set(entries_by_tag.keys()) - set(["ignore-ranking", "profile", "to-review"])
 tags = sorted(tags)
-pprint(tags)
-
 run_rank_by_subject(
     memo=memo,
     ranking_worst_to_best=ranking_worst_to_best,
     entries_by_subject=entries_by_tag,
     subjects=tags,
 )
+
+entries_by_month = group_diaries_by_month(diary_entries=diary_entries)
+months = sorted(set(entries_by_month.keys()))
+run_rank_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=entries_by_month,
+    subjects=months[-3:],
+)
+
+movies_by_decade = group_rankings_by_decade(ranking_worst_to_best=ranking_worst_to_best)
+decades = sorted(set(movies_by_decade.keys()))
+run_rank_by_subject(
+    memo=memo,
+    ranking_worst_to_best=ranking_worst_to_best,
+    entries_by_subject=movies_by_decade,
+    subjects=decades,
+)
+
+###
+# TAG LISTS
+###
+entries_by_tag = group_diary_by_tag(diary_entries=diary_entries)
 
 target_tag = "marathon-pixar"
 target_tag = "marathon-leprechaun"
@@ -480,15 +500,6 @@ run_fix_all_loops(
 entries_by_month = group_diaries_by_month(diary_entries=diary_entries)
 
 months = sorted(set(entries_by_month.keys()))
-pprint(months)
-
-run_rank_by_subject(
-    memo=memo,
-    ranking_worst_to_best=ranking_worst_to_best,
-    entries_by_subject=entries_by_month,
-    subjects=months[-3:],
-)
-
 target_month = months[-2]
 
 target_month_entries = rank_diary_by_subject(
@@ -516,21 +527,6 @@ run_fix_all_loops(
     # sort_reversed=True,
 )
 
-
-###
-# DECADE LISTS
-###
-movies_by_decade = group_rankings_by_decade(ranking_worst_to_best=ranking_worst_to_best)
-
-decades = sorted(set(movies_by_decade.keys()))
-pprint(decades)
-
-run_rank_by_subject(
-    memo=memo,
-    ranking_worst_to_best=ranking_worst_to_best,
-    entries_by_subject=movies_by_decade,
-    subjects=decades,
-)
 
 # PRINT DELTAS
 delta_targets = target_tag_entries
