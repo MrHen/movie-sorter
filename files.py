@@ -58,14 +58,12 @@ def reload_diary(
     ranking_thresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, total_rated)
     # LOAD DIARY
     ignore_diary_keys = frozenset({
-        "Anima (2019)",
-        "Squid Game (2021)",
-        "Who Killed Captain Alex? (2010)",
         "Family Dog (1987)",
     })
     diary_by_key = {
         line_to_key(entry): entry
         for entry in diary_entries
+        if "ignore-ranking" not in (entry["Tags"] or [])
     }
     diary_keys = frozenset(diary_by_key.keys())
     ranking_keys = frozenset([
