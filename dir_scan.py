@@ -1,12 +1,16 @@
 from pprint import pprint
 import re
 import requests
+from itertools import groupby
+from operator import itemgetter
+import csv
+import urllib.parse
 
 
 ALLOWED_EXT = {'mp4', 'mkv'}
 REJECTED_EXT = {'srt'}
 
-SKIP_REGEX = r'trailer'
+SKIP_REGEX = r'.*(trailer|Trailer).*'
 
 
 def scan_node(url):
@@ -18,10 +22,11 @@ def scan_node(url):
     links = re.findall(links_regex, content)
     return links
 
+with open('./dir_list.txt', 'r') as dir_list:
+    todo_list = dir_list.readlines()
 
-todo = [
-    'https://dl3.3rver.org/cdn2/02/film/',
-]
+todo = [todo_list[1].strip()]
+
 completed = []
 matches = []
 mismatches = []
@@ -29,7 +34,7 @@ unknown = []
 
 matched_dirs = []
 
-max_visited = 100
+max_visited = 10000
 
 while todo and len(completed) < max_visited:
     url = todo.pop()
@@ -60,6 +65,22 @@ while todo and len(completed) < max_visited:
         ]
     ]
 
+dir_output = [
+    [
+        re.sub(r'[^\w:-]+', ' ', urllib.parse.unquote(word))
+        for word in match.split('/')
+        if word not in ('', 'https:')
+    ]
+    for match in matches
+]
+
+dir_output_sorted = sorted(dir_output, key=itemgetter(0))
+dir_output_grouped = groupby(dir_output_sorted, key=itemgetter(0))
+for k, g in dir_output_grouped:
+    suffix = re.sub(r' +', '_', k)
+    with open(f'dir_output_{suffix}.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(g)
 
 '''
 cells = document.querySelectorAll('tr td:nth-child(2)');
