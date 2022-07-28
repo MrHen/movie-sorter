@@ -370,7 +370,7 @@ rankingsByKey = {
 
 clear_memo(memo, "Drive (2011)")
 reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
-print_memo(memo, "Naqoyqatsi (2002)", rankingsByKey)
+print_memo(memo, "Kung Fu Panda (2008)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)

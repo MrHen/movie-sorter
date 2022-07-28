@@ -59,3 +59,11 @@ while todo and len(completed) < max_visited:
             for link in links
         ]
     ]
+
+
+'''
+cells = document.querySelectorAll('tr td:nth-child(2)');
+titles = [];
+cells.forEach((cell) => titles.push(cell.textContent));
+titles.join('\n');
+'''
