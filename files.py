@@ -26,16 +26,16 @@ def run_search(memo, ranking_worst_to_best, movie, use_label=False):
 def reload_all(*, base_dir):
     # LOAD RATINGS
     ratings_file = f"{base_dir}/ratings.csv"
-    with open(ratings_file, 'r') as file:
+    with open(ratings_file, 'r', encoding='UTF-8') as file:
         ratings_unsorted = load_ratings(file)
     # LOAD RANKINGS
     rankings_file = f"{base_dir}/rankings.csv"
-    with open(rankings_file, 'r') as file:
+    with open(rankings_file, 'r', encoding='UTF-8') as file:
         rankings_best_to_worst = load_rankings(file, ratings_unsorted)
     rankings_worst_to_best = list(reversed(rankings_best_to_worst))
     # LOAD DIARY
     rankings_file = f"{base_dir}/diary.csv"
-    with open(rankings_file, 'r') as file:
+    with open(rankings_file, 'r', encoding='UTF-8') as file:
         diary_entries = load_diary(file)
     return {
         "ratings": ratings_unsorted,
@@ -125,12 +125,12 @@ def save_all(
         for movie in rankingBestToWorst
     ]
     rankingsFile = f"{base_dir}/rankings.csv"
-    with open(rankingsFile, 'w', newline='') as file:
+    with open(rankingsFile, 'w', newline='', encoding='UTF-8') as file:
         # write_metadata(file, rankedDescription)
         # file.write("\n")
         write_rankings(file, rankedOutput)
     # SAVE MEMO
     if memo:
-        with open(memo_file, 'w', newline='') as file:
+        with open(memo_file, 'w', newline='', encoding='UTF-8') as file:
             write_memo(file, memo)
 

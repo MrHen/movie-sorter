@@ -23,7 +23,7 @@ memo = {}
 # DON'T OVERWRITE THIS
 # DON'T OVERWRITE THIS
 memoFile = f"{baseDir}/memo.csv"
-with open(memoFile, 'r') as file:
+with open(memoFile, 'r', encoding='UTF-8') as file:
     memo = load_memo(file)
 # DON'T OVERWRITE THIS
 

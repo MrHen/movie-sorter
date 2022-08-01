@@ -14,7 +14,7 @@ pick_order = [
 ]
 
 voting_file = "voting/Season 5 Week 11 Voting.csv"
-with open(voting_file, newline="") as file:
+with open(voting_file, newline="", encoding='UTF-8') as file:
     reader = csv.DictReader(file)
     votes = [
         row

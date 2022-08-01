@@ -24,7 +24,7 @@ def load_list_names(*, list_dir=LISTS_DIR):
 
 
 def load_list(*, list_dir=LISTS_DIR, list_name):
-    with open(f"{list_dir}/{list_name}", newline="") as list_file:
+    with open(f"{list_dir}/{list_name}", newline="", encoding='UTF-8') as list_file:
         reader = csv.reader(list_file)
         blank = next(reader)
         metadata_header = next(reader)
@@ -65,7 +65,7 @@ def merge_lists(*, lists):
 
 def write_stats_combo(*, movies, filename):
     fieldnames = ["Position", "Name", "Year", "URL", "Description"]
-    with open(filename, 'w', newline='') as file:
+    with open(filename, 'w', newline='', encoding='UTF-8') as file:
         writer = csv.DictWriter(
             file,
             fieldnames=fieldnames,

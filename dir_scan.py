@@ -22,7 +22,7 @@ def scan_node(url):
     links = re.findall(links_regex, content)
     return links
 
-with open('./dir_list.txt', 'r') as dir_list:
+with open('./dir_list.txt', 'r', encoding='UTF-8') as dir_list:
     todo_list = dir_list.readlines()
 
 todo = [
@@ -82,7 +82,7 @@ dir_output_grouped = groupby(dir_output_sorted, key=itemgetter(0))
 for k, g in dir_output_grouped:
     suffix = re.sub(r' +', '_', k)
     print(f'writing out {suffix}')
-    with open(f'dir_output_{suffix}.csv', 'w', newline='') as csvfile:
+    with open(f'dir_output_{suffix}.csv', 'w', newline='', encoding='UTF-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(g)
 
