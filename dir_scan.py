@@ -27,7 +27,8 @@ with open('./dir_list.txt', 'r', encoding='UTF-8') as dir_list:
 
 todo = [
     todo_item.strip()
-    for todo_item in todo_list[:-1]
+    for todo_item in todo_list
+    if not todo_item.startswith('#')
 ]
 
 completed = []
@@ -70,7 +71,7 @@ while todo and len(completed) < max_visited:
 
 dir_output = [
     [
-        re.sub(r'[^A-Za-z0-9:-]+', ' ', urllib.parse.unquote(word))
+        re.sub(r'[^A-Za-z0-9:\'-]+', ' ', urllib.parse.unquote(word)).strip()
         for word in match.split('/')
         if word not in ('', 'https:', 'http:')
     ]
