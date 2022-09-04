@@ -471,8 +471,8 @@ entries_by_tag = group_diary_by_tag(diary_entries=diary_entries)
 target_tag = "marathon-pixar"
 target_tag = "marathon-leprechaun"
 target_tag = "marathon-highlander"
-target_tag = "movie-club"
 target_tag = "marathon-tarantino"
+target_tag = "movie-club"
 
 target_tag_entries = rank_diary_by_subject(
     memo=memo,
