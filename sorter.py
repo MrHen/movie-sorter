@@ -342,7 +342,7 @@ print_memo(memo, largestKey)
 
 
 # REINSERT
-key_to_reinsert = "The Omega Code (1999)"
+key_to_reinsert = "The Girl Who Leapt Through Time (2006)"
 
 rankingBestToWorst = list(reversed(ranking_worst_to_best))
 rankingsByKey = {
@@ -368,7 +368,7 @@ rankingsByKey = {
     for ranking in ranking_worst_to_best
 }
 
-clear_memo(memo, "Drive (2011)")
+clear_memo(memo, "The Girl Who Leapt Through Time (2006)")
 reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
 print_memo(memo, "Kung Fu Panda (2008)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
