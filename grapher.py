@@ -42,21 +42,79 @@ def edges_from_combinations(combinations):
 
 # comparisons = build_comparisons(memo)
 
-# edges = [
-#     [
-#         list(comparison)[0],
-#         list(comparison)[1],
-#     ]
-#     for comparison in list(memo)[:100]
-# ]
+import networkx as nx
+import matplotlib.pyplot as plt
+from pprint import pprint
+from functools import reduce
 
-# import networkx as nx
-# import matplotlib.pyplot as plt
-# G = nx.Graph()
-# G.add_edges_from(edges)
-# nx.draw_networkx(G)
+def memo_to_edges(acc, item):
+    key, winner = item
+    key_parts = list(key)
+    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
+    if not acc:
+        acc = list()
+    acc.append([winner, loser])
+    return acc
+
+edges = reduce(memo_to_edges, memo.items(), list())
+
+graph = nx.DiGraph()
+graph.add_edges_from(edges)
+
+memo_key = "Barry Lyndon (1975)"
+memo_key = "I Am Legend (2007)"
+memo_key = "(500) Days of Summer (2009)"
+memo_key = "Toy Story (1995)"
+for node in graph.successors(memo_key):
+    pprint(node)
+    pprint(graph.has_edge(memo_key, node))
+    pprint(graph.has_edge(node, memo_key))
+
+for node in graph.predecessors(memo_key):
+    pprint(node)
+    pprint(graph.has_edge(memo_key, node))
+    pprint(graph.has_edge(node, memo_key))
+
+pprint(list(graph.successors(memo_key)))
+pprint(list(graph.predecessors(memo_key)))
+
+# nx.draw_networkx(graph)
 # plt.show()
 
+for connected in nx.strongly_connected_components(graph):
+    print(f'scc. len={len(connected)}')
+    if len(connected) <= 1:
+        continue
+    subgraph = graph.subgraph(connected)
+    for biconnected in nx.biconnected_components(subgraph.to_undirected()):
+        print(f'bc. len={len(biconnected)}')
+    break
+
+cycles = nx.simple_cycles(subgraph)
+cycle = next(cycles)
+pprint(cycle)
+
+for cycle in nx.simple_cycles(subgraph):
+    print(f'cycle. {cycle[0]}\t ={len(cycle)}=>\t {cycle[-1]}')
+
+
+working_graph = subgraph.subgraph(cycle)
+for cycle in nx.simple_cycles(working_graph):
+    print(f'cycle. {cycle[0]}\t ={len(cycle)}=>\t {cycle[-1]}')
+
+
+nx.minimum_edge_cut(working_graph)
+
+
+chordal, alpha = nx.complete_to_chordal_graph(graph.to_undirected())
+for clique in nx.chordal_graph_cliques(graph.to_undirected()):
+    pprint(clique)
+
+node_connectivity = nx.all_pairs_node_connectivity(subgraph)
+
+#
+# TARJAN
+#
 from functools import reduce
 from pprint import pprint
 from tarjan import tarjan
@@ -82,3 +140,125 @@ for value in t:
     print(len(value))
 
 # https://en.wikipedia.org/wiki/Feedback_arc_set
+
+
+
+### CYCLE FIX?
+
+from loops import run_fix_multi_loop
+import networkx as nx
+import matplotlib.pyplot as plt
+from pprint import pprint
+from functools import reduce
+from itertools import islice
+
+def memo_to_edges(acc, item):
+    key, winner = item
+    key_parts = list(key)
+    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
+    if not acc:
+        acc = list()
+    acc.append([loser, winner])
+    return acc
+
+edges = reduce(memo_to_edges, memo.items(), list())
+
+graph = nx.DiGraph()
+graph.add_edges_from(edges)
+
+for connected in nx.strongly_connected_components(graph):
+    print(f'scc. len={len(connected)}')
+    if len(connected) <= 1:
+        continue
+    subgraph = graph.subgraph(connected)
+    for biconnected in nx.biconnected_components(subgraph.to_undirected()):
+        print(f'bc. len={len(biconnected)}')
+
+
+cycles = [
+    [*cycle, cycle[0]]
+    for cycle in sorted(islice(nx.simple_cycles(subgraph), 100), key=len)
+]
+pprint(cycles[0])
+
+run_fix_multi_loop(
+    cycles[:20],
+    memo,
+    movie_key=cycles[0][0],
+)
+
+### CHUNK RATINGS
+
+from loops import run_fix_multi_loop
+import networkx as nx
+import matplotlib.pyplot as plt
+from pprint import pprint
+from functools import reduce
+from itertools import islice
+import random
+
+def memo_to_edges(acc, item):
+    key, winner = item
+    key_parts = list(key)
+    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
+    if not acc:
+        acc = list()
+    acc.append([loser, winner])
+    return acc
+
+edges = reduce(memo_to_edges, memo.items(), list())
+
+graph = nx.DiGraph()
+graph.add_edges_from(edges)
+
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
+top_100 = [
+    ranking['Key']
+    for ranking in ranking_best_to_worst[:100]
+]
+
+subgraph = graph.subgraph(top_100)
+
+cycles = [
+    [*cycle, cycle[0]]
+    for cycle in sorted(islice(nx.simple_cycles(subgraph), 1000), key=len)
+]
+pprint(cycles[:1])
+
+run_fix_multi_loop(
+    cycles,
+    memo,
+    movie_key=cycles[0][0],
+    max_segments=20,
+)
+
+
+
+###
+
+min_connected = None
+min_connected_value = None
+
+for connected in nx.strongly_connected_components(subgraph):
+    print(f'scc. len={len(connected)}')
+    if len(connected) == 1:
+        continue
+    if min_connected_value is None or len(connected) < min_connected:
+        min_connected_value = len(connected)
+        min_connected = connected
+
+nx.is_strongly_connected(graph.subgraph(min_connected))
+
+rejected_nodes = set(random.sample(min_connected, len(min_connected) // 2))
+accepted_nodes = min_connected - rejected_nodes
+
+nx.is_strongly_connected(graph.subgraph(accepted_nodes))
+
+for connected_2 in nx.strongly_connected_components(graph.subgraph(accepted_nodes)):
+    print(f'scc. len={len(connected_2)}')
+
+cycles = [
+    [*cycle, cycle[0]]
+    for cycle in sorted(islice(nx.simple_cycles(graph.subgraph(accepted_nodes)), 1000), key=len)
+]
+
