@@ -17,12 +17,12 @@ from ratings import rating_cmp, rating_sorter, rating_to_key
 from tags import (group_diaries_by_month, group_diary_by_tag,
                   rank_diary_by_subject, group_rankings_by_decade, run_rank_by_subject)
 
-baseDir = constants.BASE_DIR
+base_dir = constants.BASE_DIR
 
 memo = {}
 # DON'T OVERWRITE THIS
 # DON'T OVERWRITE THIS
-memoFile = f"{baseDir}/memo.csv"
+memoFile = f"{base_dir}/memo.csv"
 with open(memoFile, 'r', encoding='UTF-8') as file:
     memo = load_memo(file)
 # DON'T OVERWRITE THIS
@@ -186,7 +186,7 @@ def run_fix_memo(memo, rating_key, rankingsByKey=None):
 
 
 # RELOAD
-data = reload_all(base_dir=baseDir)
+data = reload_all(base_dir=base_dir)
 ratings_unsorted = data["ratings"]
 ranking_worst_to_best = data["rankings"]
 diary_entries = data["diary_entries"]
@@ -211,7 +211,7 @@ save_all(
     rankings_worst_to_best=ranking_worst_to_best,
     stars_worst_to_best=stars_worst_to_best,
     rating_curve=rating_curve,
-    base_dir=baseDir,
+    base_dir=base_dir,
     memo=memo,
     memo_file=memoFile,
 )

@@ -143,3 +143,5 @@ dir_scan.py
 dir_list.txt
 dir_output_*.csv
 reviews.csv
+reviews_wordcloud.csv
+reviews_wordcloud.txt
