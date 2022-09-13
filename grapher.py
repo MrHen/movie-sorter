@@ -175,6 +175,8 @@ for connected in nx.strongly_connected_components(graph):
         print(f'bc. len={len(biconnected)}')
 
 
+cycles = list(nx.chain_decomposition(subgraph))
+
 cycles = [
     [*cycle, cycle[0]]
     for cycle in sorted(islice(nx.simple_cycles(subgraph), 100), key=len)
@@ -262,3 +264,45 @@ cycles = [
     for cycle in sorted(islice(nx.simple_cycles(graph.subgraph(accepted_nodes)), 1000), key=len)
 ]
 
+
+
+### LOOPS vs GRAPH
+
+
+from loops import run_fix_multi_loop, build_comparisons
+import networkx as nx
+import matplotlib.pyplot as plt
+from pprint import pprint
+from functools import reduce
+from itertools import islice
+import random
+
+def memo_to_edges(acc, item):
+    key, winner = item
+    key_parts = list(key)
+    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
+    if not acc:
+        acc = list()
+    acc.append([loser, winner])
+    return acc
+
+edges = reduce(memo_to_edges, memo.items(), list())
+
+graph = nx.DiGraph()
+graph.add_edges_from(edges)
+
+memo_key = 'Elephant (2003)'
+
+comparisons = build_comparisons(memo)
+
+
+all_pairs = nx.all_pairs_shortest_path(graph, cutoff=2)
+pprint(next(all_pairs))
+
+child_nodes = nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2)
+child_graph = graph.subgraph(child_nodes)
+cycles = nx.simple_cycles(child_graph)
+pprint(next(cycles))
+
+child_edges = nx.dfs_edges(graph, memo_key, depth_limit=2)
+child_graph = graph.edge_subgraph()
