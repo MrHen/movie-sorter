@@ -3,6 +3,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
 class GraphVisualization:
     def __init__(self):
         # visual is a list which stores all 
@@ -276,6 +277,7 @@ from pprint import pprint
 from functools import reduce
 from itertools import islice
 import random
+from rankings import ranked_to_key
 
 def memo_to_edges(acc, item):
     key, winner = item
@@ -291,13 +293,52 @@ edges = reduce(memo_to_edges, memo.items(), list())
 graph = nx.DiGraph()
 graph.add_edges_from(edges)
 
+memo_key = 'Spirited Away (2001)'
+memo_key = 'Dr. Dolittle 2 (2001)'
 memo_key = 'Elephant (2003)'
 
 comparisons = build_comparisons(memo)
+adj = dict(graph.adjacency())
+set(adj[memo_key].keys()) == set(comparisons['higher_than_key'][memo_key])
+
+set(graph.succ[memo_key].keys()) == set(comparisons['higher_than_key'][memo_key])
+
+all_pairs = nx.all_pairs_shortest_path(graph, cutoff=3)
+pairs = {
+    key: pairs
+    for key, pairs in all_pairs
+}
+
+loops = list()
+rankings_best_to_worst = list(reversed(ranking_worst_to_best))
+for ranking in rankings_best_to_worst:
+    ranking_key = ranked_to_key(ranking)
+    paths_to = set(pairs[ranking_key])
+    preds = set(graph.predecessors(ranking_key))
+    loops_to = paths_to & preds
+    if (loops_to):
+        print(f'{ranking_key} => {loops_to}')
+        for loop_key in loops_to:
+            loop = pairs[ranking_key][loop_key] + [ranking_key]
+            loops.append(loop)
 
 
-all_pairs = nx.all_pairs_shortest_path(graph, cutoff=2)
-pprint(next(all_pairs))
+rankings_best_to_worst = list(reversed(ranking_worst_to_best))
+for ranking in rankings_best_to_worst:
+    ranking_key = ranked_to_key(ranking)
+    paths = nx.single_source_shortest_path(graph, ranking_key, cutoff=3)
+    path_keys = set(paths.keys())
+    pred_keys = set(graph.predecessors(ranking_key))
+    loop_keys = pred_keys & path_keys
+    loops = list()
+    for loop_key in loop_keys:
+        loop = paths[loop_key] + [ranking_key]
+        print(' >> '.join(loop))
+        loops.append(loop)
+    if loops:
+        print(f'{ranking_key} has {len(loops)} loops')
+        break
+
 
 child_nodes = nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2)
 child_graph = graph.subgraph(child_nodes)
@@ -306,3 +347,4 @@ pprint(next(cycles))
 
 child_edges = nx.dfs_edges(graph, memo_key, depth_limit=2)
 child_graph = graph.edge_subgraph()
+
