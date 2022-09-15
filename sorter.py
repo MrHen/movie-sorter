@@ -219,10 +219,9 @@ save_all(
 
 
 # FIX LOOPs
-ranking_best_to_worst = list(reversed(ranking_worst_to_best))
 fix_graph(
     memo=memo,
-    rankings=ranking_best_to_worst,
+    ranking_worst_to_best=ranking_worst_to_best,
     cutoff=2,
     max_segments=20,
     max_loops=100,

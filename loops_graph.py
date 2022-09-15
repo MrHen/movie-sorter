@@ -5,6 +5,7 @@ from rankings import ranked_to_key
 from bubble import run_bubble_sorting
 from memo import reverse_memo
 
+
 def memo_to_edges(acc, item):
     key, winner = item
     key_parts = list(key)
@@ -14,11 +15,13 @@ def memo_to_edges(acc, item):
     acc.append([loser, winner])
     return acc
 
+
 def memo_to_graph(memo):
     edges = reduce(memo_to_edges, memo.items(), list())
     graph = nx.DiGraph()
     graph.add_edges_from(edges)
     return graph
+
 
 def reverse_edge(graph, left, right):
     if not graph.has_edge(left, right):
@@ -27,6 +30,14 @@ def reverse_edge(graph, left, right):
         return
     graph.remove_edge(left, right)
     graph.add_edge(right, left)
+
+
+def set_edge(graph, left, right):
+    if not graph.has_edge(left, right):
+        graph.add_edge(left, right)
+    if graph.has_edge(right, left):
+        graph.remove_edge(right, left)
+
 
 def graph_to_loops(
     *,
@@ -57,21 +68,26 @@ def graph_to_loops(
                 break
     return graph_loops
 
+
 def fix_graph(
     *,
+    graph=None,
     memo,
-    rankings,
+    ranking_worst_to_best,
     cutoff=2,
     max_loops=1,
     max_segments=20,
     verbose=False,
 ):
-    graph = memo_to_graph(memo)
+    if not graph:
+        graph = memo_to_graph(memo)
     fix = True
+    fix_count = 0
     while fix:
+        ranking_best_to_worst = list(reversed(ranking_worst_to_best))
         loops = graph_to_loops(
             graph=graph,
-            rankings=rankings,
+            rankings=ranking_best_to_worst,
             cutoff=cutoff,
             max_loops=max_loops,
             verbose=verbose,
@@ -87,5 +103,8 @@ def fix_graph(
         else:
             fix = False
         if fix:
+            fix_count += 1
             reverse_memo(memo, fix["left"], fix["right"])
             reverse_edge(graph, fix["left"], fix["right"])
+            run_bubble_sorting(memo, ranking_worst_to_best)
+    return fix_count

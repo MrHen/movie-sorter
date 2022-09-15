@@ -279,12 +279,16 @@ from itertools import islice
 import random
 from rankings import ranked_to_key
 from bubble import run_bubble_sorting
-from memo import reverse_memo
-from loops_graph import memo_to_graph, memo_to_edges
+from memo import reverse_memo, set_memo
+from loops_graph import memo_to_graph, memo_to_edges, graph_to_loops, fix_graph, set_edge, reverse_edge
+from prompt import prompt_for_winner, prompt_for_loop, prompt_for_segments
+import math
 
 memo_key = 'Spirited Away (2001)'
 memo_key = 'Dr. Dolittle 2 (2001)'
 memo_key = 'Elephant (2003)'
+
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
 
 graph = memo_to_graph(memo)
 
@@ -325,6 +329,7 @@ for three in ranking_worst_to_best:
     one_key = two_key
     two_key = three_key
 
+
 nx.is_chordal(ranking_graph.to_undirected())
 ranking_chordal, alpha = nx.complete_to_chordal_graph(ranking_graph.to_undirected())
 ranking_chordal.remove_edges_from(ranking_graph.edges)
@@ -333,3 +338,55 @@ triadic_census = nx.triadic_census(ranking_graph)
 pprint(triadic_census)
 
 triads_by_type = nx.triads_by_type(ranking_graph)
+
+
+graph = memo_to_graph(memo)
+loops = True
+while loops:
+    loops = graph_to_loops(
+        graph=graph,
+        rankings=ranking_best_to_worst,
+        cutoff=3,
+        max_loops=1,
+    )
+    if not loops:
+        break
+    loop = loops[0]
+    print(' << '.join(loop))
+    if len(loop) == 4:
+        print('BBB')
+        fix = run_fix_multi_loop([loop])
+        if fix:
+            reverse_memo(memo, fix["left"], fix["right"])
+            reverse_edge(graph, fix["left"], fix["right"])
+            run_bubble_sorting(memo, ranking_worst_to_best)
+    elif len(loop) > 4:
+        print('CCC')
+        hit = True
+        left = 0
+        right = len(loop) - 1
+        while hit:
+            mid = math.ceil((right - left) / 2)
+            left_key = loop[left]
+            mid_key = loop[mid]
+            hit = graph.has_edge(left_key, mid_key) or graph.has_edge(mid_key, left_key)
+            # print(f'{left} : {mid} : {right} => {hit}')
+            right = mid - 1
+        winner = prompt_for_winner(left_key, mid_key)
+        loser = left_key if mid_key == winner else mid_key
+        print(f'setting {loser} << {winner}')
+        set_memo(memo, loser, winner)
+        set_edge(graph, loser, winner)
+    print('DDD')
+    fix_graph(
+        graph=graph,
+        memo=memo,
+        ranking_worst_to_best=ranking_worst_to_best,
+        cutoff=2,
+        max_segments=20,
+        max_loops=100,
+    )
+
+
+nx.shortest_path(graph, left_key, mid_key)
+nx.shortest_path(graph, mid_key, left_key)

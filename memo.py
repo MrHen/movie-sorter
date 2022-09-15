@@ -59,6 +59,11 @@ def reverse_memo(comparisons, primary_key, secondary_key):
     print(f"Reversed\t {previous}\t to {comparisons[key]}")
 
 
+def set_memo(memo, loser, winner):
+    key = frozenset([loser, winner])
+    memo[key] = winner
+
+
 def analyze_memo(comparisons, rating_key, rankingsByKey=None):
     rankingsByKey = rankingsByKey or {}
     higher_than = set()
