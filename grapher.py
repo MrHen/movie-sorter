@@ -270,7 +270,7 @@ cycles = [
 ### LOOPS vs GRAPH
 
 
-from loops import run_fix_multi_loop, build_comparisons
+from loops import run_fix_multi_loop
 import networkx as nx
 import matplotlib.pyplot as plt
 from pprint import pprint
@@ -278,67 +278,15 @@ from functools import reduce
 from itertools import islice
 import random
 from rankings import ranked_to_key
-
-def memo_to_edges(acc, item):
-    key, winner = item
-    key_parts = list(key)
-    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
-    if not acc:
-        acc = list()
-    acc.append([loser, winner])
-    return acc
-
-edges = reduce(memo_to_edges, memo.items(), list())
-
-graph = nx.DiGraph()
-graph.add_edges_from(edges)
+from bubble import run_bubble_sorting
+from memo import reverse_memo
+from loops_graph import memo_to_graph, memo_to_edges
 
 memo_key = 'Spirited Away (2001)'
 memo_key = 'Dr. Dolittle 2 (2001)'
 memo_key = 'Elephant (2003)'
 
-comparisons = build_comparisons(memo)
-adj = dict(graph.adjacency())
-set(adj[memo_key].keys()) == set(comparisons['higher_than_key'][memo_key])
-
-set(graph.succ[memo_key].keys()) == set(comparisons['higher_than_key'][memo_key])
-
-all_pairs = nx.all_pairs_shortest_path(graph, cutoff=3)
-pairs = {
-    key: pairs
-    for key, pairs in all_pairs
-}
-
-loops = list()
-rankings_best_to_worst = list(reversed(ranking_worst_to_best))
-for ranking in rankings_best_to_worst:
-    ranking_key = ranked_to_key(ranking)
-    paths_to = set(pairs[ranking_key])
-    preds = set(graph.predecessors(ranking_key))
-    loops_to = paths_to & preds
-    if (loops_to):
-        print(f'{ranking_key} => {loops_to}')
-        for loop_key in loops_to:
-            loop = pairs[ranking_key][loop_key] + [ranking_key]
-            loops.append(loop)
-
-
-rankings_best_to_worst = list(reversed(ranking_worst_to_best))
-for ranking in rankings_best_to_worst:
-    ranking_key = ranked_to_key(ranking)
-    paths = nx.single_source_shortest_path(graph, ranking_key, cutoff=3)
-    path_keys = set(paths.keys())
-    pred_keys = set(graph.predecessors(ranking_key))
-    loop_keys = pred_keys & path_keys
-    loops = list()
-    for loop_key in loop_keys:
-        loop = paths[loop_key] + [ranking_key]
-        print(' >> '.join(loop))
-        loops.append(loop)
-    if loops:
-        print(f'{ranking_key} has {len(loops)} loops')
-        break
-
+graph = memo_to_graph(memo)
 
 child_nodes = nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2)
 child_graph = graph.subgraph(child_nodes)
@@ -348,3 +296,40 @@ pprint(next(cycles))
 child_edges = nx.dfs_edges(graph, memo_key, depth_limit=2)
 child_graph = graph.edge_subgraph()
 
+
+child_nodes = list(nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2))
+triadic_census = nx.triadic_census(graph, child_nodes)
+pprint(triadic_census)
+
+child_nodes = nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2)
+child_graph = graph.subgraph(child_nodes)
+chordal, alpha = nx.complete_to_chordal_graph(child_graph.to_undirected())
+
+chordal.remove_edges_from(child_graph.edges)
+
+
+ranking_graph = nx.DiGraph()
+one_key = None
+two_key = None
+for three in ranking_worst_to_best:
+    three_key = three["Key"]
+    if two_key:
+        ranking_graph.add_edge(two_key, three_key)
+    if one_key:
+        one_three = frozenset([one_key, three_key])
+        if one_three in memo:
+            winner = memo[one_three]
+            loser = one_key if winner == three_key else three_key
+            # print(f'{loser} << {winner}')
+            ranking_graph.add_edge(loser, winner)
+    one_key = two_key
+    two_key = three_key
+
+nx.is_chordal(ranking_graph.to_undirected())
+ranking_chordal, alpha = nx.complete_to_chordal_graph(ranking_graph.to_undirected())
+ranking_chordal.remove_edges_from(ranking_graph.edges)
+
+triadic_census = nx.triadic_census(ranking_graph)
+pprint(triadic_census)
+
+triads_by_type = nx.triads_by_type(ranking_graph)

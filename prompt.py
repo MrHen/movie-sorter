@@ -54,6 +54,8 @@ def prompt_for_segments(segments, movie_key=None):
             for i in range(0, len(segments)):
                 segment = segments[i]
                 left = segment["left"]
+                if not movie_key:
+                    movie_key = left
                 if i != 0 and (left == movie_key or right == movie_key):
                     prompt.append("")
                 right = segment["right"]

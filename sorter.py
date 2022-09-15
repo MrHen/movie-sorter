@@ -9,6 +9,7 @@ from files import reload_all, reload_diary, run_search, save_all
 from labels import build_movie_label
 from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
 from loops import run_fix_all_loops, run_fix_loop
+from loops_graph import fix_graph
 from memo import (add_memo, analyze_memo, clear_memo, load_memo, print_memo,
                   reverse_memo)
 from prompt import prompt_for_segments, trunc_string
@@ -218,11 +219,20 @@ save_all(
 
 
 # FIX LOOPs
-rankingBestToWorst = list(reversed(ranking_worst_to_best))
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
+fix_graph(
+    memo=memo,
+    rankings=ranking_best_to_worst,
+    cutoff=2,
+    max_segments=20,
+    max_loops=100,
+)
+
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
 run_fix_all_loops(
     ranking_worst_to_best=ranking_worst_to_best,
     memo=memo,
-    rankings=rankingBestToWorst,
+    rankings=ranking_best_to_worst,
     max_depth=3,
     max_segments=20,
     max_loops=100,
@@ -232,11 +242,11 @@ run_fix_all_loops(
 )
 
 
-rankingBestToWorst = list(reversed(ranking_worst_to_best))
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
 run_fix_all_loops(
     ranking_worst_to_best=ranking_worst_to_best,
     memo=memo,
-    rankings=rankingBestToWorst,
+    rankings=ranking_best_to_worst,
     max_depth=4,
     max_loops=None,
     max_segments=20,
@@ -244,9 +254,7 @@ run_fix_all_loops(
     sort_reversed=True,
 )
 
-
 # BUBBLE
-rankingBestToWorst = list(reversed(ranking_worst_to_best))
 changes = True
 while changes:
     for step in range(2, 20, 1):
@@ -254,6 +262,7 @@ while changes:
         changes = True
         while changes:
             print("...bubble pass")
+            ranking_best_to_worst = list(reversed(ranking_worst_to_best))
             changes = bubble_pass(
                 memo,
                 ranking_worst_to_best,
@@ -265,17 +274,14 @@ while changes:
                 use_label=True,
             )
             print("...fix loops")
-            run_fix_all_loops(
-                ranking_worst_to_best=ranking_worst_to_best,
+            fix_graph(
                 memo=memo,
-                rankings=rankingBestToWorst,
-                max_depth=3,
+                rankings=ranking_best_to_worst,
+                cutoff=2,
                 max_segments=20,
                 max_loops=100,
-                # max_loops=None,
-                # sort_key="count",
-                # sort_reversed=True,
             )
+            run_bubble_sorting(memo, ranking_worst_to_best)
 
 
 # LOOP MEMO
@@ -344,7 +350,7 @@ print_memo(memo, largestKey)
 # REINSERT
 key_to_reinsert = "The Girl Who Leapt Through Time (2006)"
 
-rankingBestToWorst = list(reversed(ranking_worst_to_best))
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
 rankingsByKey = {
     ranked_to_key(ranking): ranking
     for ranking in ranking_worst_to_best
@@ -532,8 +538,8 @@ run_fix_all_loops(
 delta_targets = target_tag_entries
 delta_targets = target_month_entries
 
-rankingBestToWorst = list(reversed(ranking_worst_to_best))
-delta_targets = rankingBestToWorst
+ranking_best_to_worst = list(reversed(ranking_worst_to_best))
+delta_targets = ranking_best_to_worst
 
 rankedDeltas = filter(lambda x: x.get("RatingDelta", True), delta_targets)
 for movie in rankedDeltas:

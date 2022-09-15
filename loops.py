@@ -55,7 +55,6 @@ def find_comparison_loops(comparisons, curr_key, path=None, max_depth=10):
 
 def run_fix_multi_loop(
     loops_higher_than,
-    memo,
     movie_key=None,
     sort_key="pos",
     sort_reversed=False,
@@ -96,7 +95,7 @@ def run_fix_multi_loop(
         segments = segments[:max_segments]
     response = prompt_for_segments(segments, movie_key=movie_key)
     fix = segments[response]
-    reverse_memo(memo, fix["left"], fix["right"])
+    return fix
 
 
 def run_fix_all_loops(
@@ -138,14 +137,14 @@ def run_fix_all_loops(
             first_ranking_key = ranked_to_key(first_ranking)
             label = build_movie_label(first_ranking)
             print(f"\n{len(all_loops)} segments starting at {label}\n")
-            run_fix_multi_loop(
+            fix = run_fix_multi_loop(
                 all_loops,
-                memo,
                 movie_key=first_ranking_key,
                 max_segments=max_segments,
                 sort_key=sort_key,
                 sort_reversed=sort_reversed,
             )
+            reverse_memo(memo, fix["left"], fix["right"])
             run_bubble_sorting(memo, ranking_worst_to_best)
     return saw_changes
 
@@ -171,6 +170,6 @@ def run_fix_loop(
             movie_key = ranking["Key"]
             label = build_movie_label(ranking)
             print(f"{len(loops_higher_than)} loops for {label}\n")
-            run_fix_multi_loop(loops_higher_than, memo, movie_key=movie_key)
+            fix = run_fix_multi_loop(loops_higher_than, movie_key=movie_key)
+            reverse_memo(memo, fix["left"], fix["right"])
             run_bubble_sorting(memo, ranking_worst_to_best)
-
