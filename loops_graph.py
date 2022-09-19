@@ -32,6 +32,7 @@ def reverse_edge(graph, left, right):
         print(f"reverse_edge couldn't find {left} <<< {right}")
         print(f"reverse_edge couldn't find {right} <<< {left}")
         return
+    print(f"Flipped\t {winner}\t over {loser}")
     graph.remove_edge(loser, winner)
     graph.add_edge(winner, loser)
 
