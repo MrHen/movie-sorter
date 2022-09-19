@@ -24,12 +24,16 @@ def memo_to_graph(memo):
 
 
 def reverse_edge(graph, left, right):
-    if not graph.has_edge(left, right):
-        right, left = left, right
-    if not graph.has_edge(left, right):
+    if graph.has_edge(left, right):
+        loser, winner = left, right
+    elif graph.has_edge(right, left):
+        loser, winner = right, left
+    else:
+        print(f"reverse_edge couldn't find {left} <<< {right}")
+        print(f"reverse_edge couldn't find {right} <<< {left}")
         return
-    graph.remove_edge(left, right)
-    graph.add_edge(right, left)
+    graph.remove_edge(loser, winner)
+    graph.add_edge(winner, loser)
 
 
 def set_edge(graph, left, right):
@@ -84,6 +88,7 @@ def fix_graph(
     fix = True
     fix_count = 0
     while fix:
+        print("Finding next batch of loops...")
         ranking_best_to_worst = list(reversed(ranking_worst_to_best))
         loops = graph_to_loops(
             graph=graph,
@@ -93,6 +98,7 @@ def fix_graph(
             verbose=verbose,
         )
         if loops:
+            print(f"\n{len(loops)} segments\n")
             fix = run_fix_multi_loop(
                 loops,
                 # movie_key=ranking_key,

@@ -68,7 +68,7 @@ def prompt_for_segments(segments, movie_key=None):
         response = input("\n".join(prompt) + "\n")
         if response != "":
             try:
-                    response = int(response)
+                response = int(response)
             except ValueError:
                 response = None
     return response
