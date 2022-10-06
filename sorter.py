@@ -5,14 +5,14 @@ from textwrap import dedent
 
 import constants
 from bubble import bubble_pass, run_bubble_sorting
-from files import reload_all, reload_diary, run_search, save_all
+from files import reload_all, reload_diary, run_search, save_all, save_hierarchy
 from labels import build_movie_label
 from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
 from loops import run_fix_all_loops, run_fix_loop
-from loops_graph import fix_graph
+from loops_graph import fix_graph, memo_to_graph
 from memo import (add_memo, analyze_memo, clear_memo, load_memo, print_memo,
                   reverse_memo)
-from prompt import prompt_for_segments, trunc_string
+from prompt import prompt_for_segments
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_sorter, rating_to_key
 from tags import (group_diaries_by_month, group_diary_by_tag,
@@ -217,6 +217,12 @@ save_all(
     memo_file=memoFile,
 )
 
+graph = memo_to_graph(memo)
+save_hierarchy(
+    graph=graph,
+    base_dir=base_dir,
+    ranking_worst_to_best=ranking_worst_to_best,
+)
 
 # FIX LOOPs
 fix_graph(
@@ -275,7 +281,7 @@ while changes:
             print("...fix loops")
             fix_graph(
                 memo=memo,
-                rankings=ranking_best_to_worst,
+                ranking_worst_to_best=ranking_worst_to_best,
                 cutoff=2,
                 max_segments=20,
                 max_loops=100,
@@ -347,7 +353,7 @@ print_memo(memo, largestKey)
 
 
 # REINSERT
-key_to_reinsert = "The Girl Who Leapt Through Time (2006)"
+key_to_reinsert = "Bad Travelling (2022)"
 
 ranking_best_to_worst = list(reversed(ranking_worst_to_best))
 rankingsByKey = {
@@ -373,7 +379,7 @@ rankingsByKey = {
     for ranking in ranking_worst_to_best
 }
 
-clear_memo(memo, "The Girl Who Leapt Through Time (2006)")
+clear_memo(memo, "Robot & Frank (2012)")
 reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
 print_memo(memo, "Kung Fu Panda (2008)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)

@@ -3,7 +3,7 @@ import networkx as nx
 from functools import reduce
 from rankings import ranked_to_key
 from bubble import run_bubble_sorting
-from memo import reverse_memo
+from memo import reverse_memo, set_memo
 
 
 def memo_to_edges(acc, item):
@@ -21,6 +21,13 @@ def memo_to_graph(memo):
     graph = nx.DiGraph()
     graph.add_edges_from(edges)
     return graph
+
+
+def graph_to_memo(graph, memo=None, verbose=False):
+    memo = memo or {}
+    for edge in graph.edges():
+        set_memo(memo, edge[0], edge[1], verbose=verbose)
+    return memo
 
 
 def reverse_edge(graph, left, right):

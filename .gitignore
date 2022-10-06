@@ -145,3 +145,4 @@ dir_output_*.csv
 reviews.csv
 reviews_wordcloud.csv
 reviews_wordcloud.txt
+hierarchy.json

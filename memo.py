@@ -59,8 +59,11 @@ def reverse_memo(comparisons, primary_key, secondary_key):
     print(f"Reversed\t {previous}\t to {comparisons[key]}")
 
 
-def set_memo(memo, loser, winner):
+def set_memo(memo, loser, winner, verbose=False):
     key = frozenset([loser, winner])
+    if verbose:
+        if key in memo and memo[key] != winner:
+            print(f'\t... updating {key} to {winner}')
     memo[key] = winner
 
 

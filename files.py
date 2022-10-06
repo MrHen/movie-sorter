@@ -1,3 +1,6 @@
+import csv
+import json
+import math
 
 from dairy import line_to_key, load_diary
 from memo import write_memo
@@ -134,3 +137,27 @@ def save_all(
         with open(memo_file, 'w', newline='', encoding='UTF-8') as file:
             write_memo(file, memo)
 
+
+def save_hierarchy(
+    *,
+    base_dir,
+    graph,
+    ranking_worst_to_best,
+):
+    edgeData = [
+        {
+            "name": ranking["Key"],
+            "successors": list(graph.successors(ranking["Key"])),
+            "position": ranking["Position"],
+            "path": "|".join([
+                f"all",
+                str(math.floor(math.log2(ranking['Position']))),
+                str(ranking['Position']),
+                ranking["Key"],
+            ]),
+        }
+        for ranking in ranking_worst_to_best[-500:-400]
+    ]
+    edgesFile = f"{base_dir}/hierarchy.json"
+    with open(edgesFile, 'w', newline='', encoding='UTF-8') as file:
+        file.write(json.dumps(edgeData))
