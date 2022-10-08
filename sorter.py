@@ -9,7 +9,7 @@ from files import reload_all, reload_diary, run_search, save_all, save_hierarchy
 from labels import build_movie_label
 from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
 from loops import run_fix_all_loops, run_fix_loop
-from loops_graph import fix_graph, memo_to_graph
+from loops_graph import fix_graph, memo_to_graph, node_to_loops
 from memo import (add_memo, analyze_memo, clear_memo, load_memo, print_memo,
                   reverse_memo)
 from prompt import prompt_for_segments
@@ -381,20 +381,20 @@ rankingsByKey = {
 
 clear_memo(memo, "Robot & Frank (2012)")
 reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
-print_memo(memo, "Kung Fu Panda (2008)", rankingsByKey)
+print_memo(memo, "Fast & Furious (2009)", rankingsByKey)
 print_memo(memo, "Toy Story (1995)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
 run_fix_memo(
     memo,
-    "How to Train Your Dragon 2 (2014)",
+    "Fast & Furious (2009)",
     rankingsByKey,
 )
 run_fix_loop(
     ranking_worst_to_best=ranking_worst_to_best,
     memo=memo,
-    ranking=rankingsByKey["The Good Dinosaur (2015)"],
+    ranking=rankingsByKey["Final Destination 2 (2003)"],
     max_depth=5,
 )
 
@@ -479,11 +479,8 @@ run_rank_by_subject(
 ###
 entries_by_tag = group_diary_by_tag(diary_entries=diary_entries)
 
-target_tag = "marathon-pixar"
-target_tag = "marathon-leprechaun"
-target_tag = "marathon-highlander"
-target_tag = "marathon-tarantino"
 target_tag = "movie-club"
+target_tag = "marathon-final-destination"
 
 target_tag_entries = rank_diary_by_subject(
     memo=memo,
@@ -502,6 +499,16 @@ run_fix_all_loops(
     memo=memo,
     rankings=target_tag_entries,
     max_depth=3,
+)
+
+graph = memo_to_graph(memo)
+fix_graph(
+    memo=memo,
+    graph=graph,
+    ranking_worst_to_best=list(reversed(target_tag_entries)),
+    cutoff=20,
+    max_segments=20,
+    max_loops=100,
 )
 
 

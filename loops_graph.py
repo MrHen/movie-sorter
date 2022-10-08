@@ -51,6 +51,30 @@ def set_edge(graph, left, right):
         graph.remove_edge(right, left)
 
 
+def node_to_loops(
+    *,
+    graph,
+    node,
+    cutoff=2,
+    verbose=False,
+):
+    if not node:
+        return list()
+    if not graph.has_node(node):
+        return list()
+    paths = nx.single_source_shortest_path(graph, node, cutoff=cutoff)
+    path_keys = set(paths.keys())
+    pred_keys = set(graph.predecessors(node))
+    loop_keys = pred_keys & path_keys
+    ranking_loops = list()
+    for loop_key in loop_keys:
+        loop = paths[loop_key] + [node]
+        if verbose:
+            print(' << '.join(loop))
+        ranking_loops.append(loop)
+    return ranking_loops
+
+
 def graph_to_loops(
     *,
     rankings,
@@ -62,16 +86,12 @@ def graph_to_loops(
     graph_loops = list()
     for ranking in rankings:
         ranking_key = ranked_to_key(ranking)
-        paths = nx.single_source_shortest_path(graph, ranking_key, cutoff=cutoff)
-        path_keys = set(paths.keys())
-        pred_keys = set(graph.predecessors(ranking_key))
-        loop_keys = pred_keys & path_keys
-        ranking_loops = list()
-        for loop_key in loop_keys:
-            loop = paths[loop_key] + [ranking_key]
-            if verbose:
-                print(' << '.join(loop))
-            ranking_loops.append(loop)
+        ranking_loops = node_to_loops(
+            graph=graph,
+            node=ranking_key,
+            cutoff=cutoff,
+            verbose=verbose,
+        )
         if ranking_loops:
             print(f'{ranking_key} has {len(ranking_loops)} loops')
             graph_loops.extend(ranking_loops)
