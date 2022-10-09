@@ -1,10 +1,11 @@
-
-
+import math
 from operator import itemgetter
+
 from bubble import run_bubble_sorting
+from graph import reverse_edge, set_edge
 from labels import build_movie_label
-from memo import reverse_memo
-from prompt import prompt_for_loop, prompt_for_segments
+from memo import reverse_memo, set_memo
+from prompt import prompt_for_loop, prompt_for_segments, prompt_for_winner
 from rankings import ranked_to_key
 
 
@@ -173,3 +174,49 @@ def run_fix_loop(
             fix = run_fix_multi_loop(loops_higher_than, movie_key=movie_key)
             reverse_memo(memo, fix["left"], fix["right"])
             run_bubble_sorting(memo, ranking_worst_to_best)
+
+
+def split_loop(
+    *,
+    loop,
+    memo,
+    graph,
+    ranking_worst_to_best,
+):
+    print('\n\t << '.join(loop))
+    if len(loop) == 4:
+        print('BBB')
+        fix = run_fix_multi_loop([loop])
+        if fix:
+            fix = {
+                "loser": fix["left"],
+                "right": fix["right"],
+            }
+    elif len(loop) > 4:
+        print('CCC')
+        hit = True
+        left = 0
+        right = len(loop) - 1
+        while hit and left != right:
+            right = math.ceil((right - left) / 2)
+            left_key = loop[left]
+            right_key = loop[right]
+            hit = graph.has_edge(left_key, right_key) or graph.has_edge(right_key, left_key)
+            # print(f'{left} : {mid} : {right} => {hit}')
+        if not hit:
+            winner = prompt_for_winner(left_key, right_key)
+            loser = left_key if right_key == winner else right_key
+            fix = {
+                "loser": loser,
+                "winner": winner,
+            }
+    if fix:
+        loser = fix["loser"]
+        winner = fix["winner"]
+        print(f'setting {loser} << {winner}')
+        # reverse_memo(memo, fix["left"], fix["right"])
+        # reverse_edge(graph, fix["left"], fix["right"])
+        set_memo(memo, loser, winner)
+        set_edge(graph, loser, winner)
+        run_bubble_sorting(memo, ranking_worst_to_best)
+    return fix

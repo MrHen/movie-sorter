@@ -5,18 +5,22 @@ from textwrap import dedent
 
 import constants
 from bubble import bubble_pass, run_bubble_sorting
-from files import reload_all, reload_diary, run_search, save_all, save_hierarchy
+from files import (reload_all, reload_diary, run_search, save_all,
+                   save_hierarchy)
+from graph import memo_to_graph
 from labels import build_movie_label
-from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
-from loops import run_fix_all_loops, run_fix_loop
-from loops_graph import fix_graph, memo_to_graph, node_to_loops
+from lists import (create_weighted_list, do_lists_match, load_list,
+                   load_list_names, print_list_comparison, write_file_parts)
+from loops import run_fix_all_loops, run_fix_loop, split_loop
+from loops_graph import fix_graph, graph_to_loops
 from memo import (add_memo, analyze_memo, clear_memo, load_memo, print_memo,
                   reverse_memo)
 from prompt import prompt_for_segments
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_sorter, rating_to_key
 from tags import (group_diaries_by_month, group_diary_by_tag,
-                  rank_diary_by_subject, group_rankings_by_decade, run_rank_by_subject)
+                  group_rankings_by_decade, rank_diary_by_subject,
+                  run_rank_by_subject)
 
 base_dir = constants.BASE_DIR
 
@@ -289,6 +293,40 @@ while changes:
             run_bubble_sorting(memo, ranking_worst_to_best)
 
 
+# GRAPH EXPERIMENTS
+
+changes = True
+while changes:
+    print('start loop')
+    graph = memo_to_graph(memo)
+    ranking_best_to_worst = list(reversed(ranking_worst_to_best))
+    loops = graph_to_loops(
+        graph=graph,
+        rankings=ranking_best_to_worst,
+        cutoff=20,
+        max_loops=1,
+        verbose=False,
+    )
+    print(f'\t... found {len(loops)} loops')
+    split_loop(
+        loop=loops[0],
+        memo=memo,
+        graph=graph,
+        ranking_worst_to_best=ranking_worst_to_best,
+    )
+    changes = True
+    while changes:
+        print(f'\t... fixing')
+        changes = fix_graph(
+            memo=memo,
+            ranking_worst_to_best=ranking_worst_to_best,
+            cutoff=2,
+            max_segments=20,
+            max_loops=100,
+        )
+    changes = len(loops) > 0
+
+
 # LOOP MEMO
 rankingsByKey = {
     ranked_to_key(ranking): ranking
@@ -382,7 +420,7 @@ rankingsByKey = {
 clear_memo(memo, "Robot & Frank (2012)")
 reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
 print_memo(memo, "Fast & Furious (2009)", rankingsByKey)
-print_memo(memo, "Toy Story (1995)", rankingsByKey)
+print_memo(memo, "It Happened One Night (1934)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)
 
