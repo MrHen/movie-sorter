@@ -190,52 +190,6 @@ run_fix_multi_loop(
     movie_key=cycles[0][0],
 )
 
-### CHUNK RATINGS
-
-from loops import run_fix_multi_loop
-import networkx as nx
-import matplotlib.pyplot as plt
-from pprint import pprint
-from functools import reduce
-from itertools import islice
-import random
-
-def memo_to_edges(acc, item):
-    key, winner = item
-    key_parts = list(key)
-    loser = key_parts[1] if key_parts[0] == winner else key_parts[0]
-    if not acc:
-        acc = list()
-    acc.append([loser, winner])
-    return acc
-
-edges = reduce(memo_to_edges, memo.items(), list())
-
-graph = nx.DiGraph()
-graph.add_edges_from(edges)
-
-ranking_best_to_worst = list(reversed(ranking_worst_to_best))
-top_100 = [
-    ranking['Key']
-    for ranking in ranking_best_to_worst[:100]
-]
-
-subgraph = graph.subgraph(top_100)
-
-cycles = [
-    [*cycle, cycle[0]]
-    for cycle in sorted(islice(nx.simple_cycles(subgraph), 1000), key=len)
-]
-pprint(cycles[:1])
-
-run_fix_multi_loop(
-    cycles,
-    memo,
-    movie_key=cycles[0][0],
-    max_segments=20,
-)
-
-
 
 ###
 
@@ -266,9 +220,7 @@ cycles = [
 ]
 
 
-
-### LOOPS vs GRAPH
-
+### Connected
 
 from loops import run_fix_multi_loop
 import networkx as nx
@@ -276,117 +228,19 @@ import matplotlib.pyplot as plt
 from pprint import pprint
 from functools import reduce
 from itertools import islice
-import random
-from rankings import ranked_to_key
-from bubble import run_bubble_sorting
-from memo import reverse_memo, set_memo
-from loops_graph import memo_to_graph, memo_to_edges, graph_to_loops, fix_graph, set_edge, reverse_edge
-from prompt import prompt_for_winner, prompt_for_loop, prompt_for_segments
-import math
-
-memo_key = 'Spirited Away (2001)'
-memo_key = 'Dr. Dolittle 2 (2001)'
-memo_key = 'Elephant (2003)'
-
-ranking_best_to_worst = list(reversed(ranking_worst_to_best))
+from graph import memo_to_graph
 
 graph = memo_to_graph(memo)
 
-child_nodes = nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2)
-child_graph = graph.subgraph(child_nodes)
-cycles = nx.simple_cycles(child_graph)
-pprint(next(cycles))
+scc_counter = 0
+scc_max = 200
 
-child_edges = nx.dfs_edges(graph, memo_key, depth_limit=2)
-child_graph = graph.edge_subgraph()
-
-
-child_nodes = list(nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2))
-triadic_census = nx.triadic_census(graph, child_nodes)
-pprint(triadic_census)
-
-child_nodes = nx.dfs_preorder_nodes(graph, memo_key, depth_limit=2)
-child_graph = graph.subgraph(child_nodes)
-chordal, alpha = nx.complete_to_chordal_graph(child_graph.to_undirected())
-
-chordal.remove_edges_from(child_graph.edges)
-
-
-ranking_graph = nx.DiGraph()
-one_key = None
-two_key = None
-for three in ranking_worst_to_best:
-    three_key = three["Key"]
-    if two_key:
-        ranking_graph.add_edge(two_key, three_key)
-    if one_key:
-        one_three = frozenset([one_key, three_key])
-        if one_three in memo:
-            winner = memo[one_three]
-            loser = one_key if winner == three_key else three_key
-            # print(f'{loser} << {winner}')
-            ranking_graph.add_edge(loser, winner)
-    one_key = two_key
-    two_key = three_key
-
-
-nx.is_chordal(ranking_graph.to_undirected())
-ranking_chordal, alpha = nx.complete_to_chordal_graph(ranking_graph.to_undirected())
-ranking_chordal.remove_edges_from(ranking_graph.edges)
-
-triadic_census = nx.triadic_census(ranking_graph)
-pprint(triadic_census)
-
-triads_by_type = nx.triads_by_type(ranking_graph)
-
-
-graph = memo_to_graph(memo)
-loops = True
-while loops:
-    loops = graph_to_loops(
-        graph=graph,
-        rankings=ranking_best_to_worst,
-        cutoff=3,
-        max_loops=1,
-    )
-    if not loops:
+connected_list = []
+for connected in nx.strongly_connected_components(graph):
+    print(f'scc. f{scc_counter}. len={len(connected)}')
+    connected_list.append(connected)
+    if len(connected) > 1:
         break
-    loop = loops[0]
-    print(' << '.join(loop))
-    if len(loop) == 4:
-        print('BBB')
-        fix = run_fix_multi_loop([loop])
-        if fix:
-            reverse_memo(memo, fix["left"], fix["right"])
-            reverse_edge(graph, fix["left"], fix["right"])
-            run_bubble_sorting(memo, ranking_worst_to_best)
-    elif len(loop) > 4:
-        print('CCC')
-        hit = True
-        left = 0
-        right = len(loop) - 1
-        while hit:
-            mid = math.ceil((right - left) / 2)
-            left_key = loop[left]
-            mid_key = loop[mid]
-            hit = graph.has_edge(left_key, mid_key) or graph.has_edge(mid_key, left_key)
-            # print(f'{left} : {mid} : {right} => {hit}')
-            right = mid - 1
-        winner = prompt_for_winner(left_key, mid_key)
-        loser = left_key if mid_key == winner else mid_key
-        print(f'setting {loser} << {winner}')
-        set_memo(memo, loser, winner)
-        set_edge(graph, loser, winner)
-    print('DDD')
-    fix_graph(
-        graph=graph,
-        memo=memo,
-        ranking_worst_to_best=ranking_worst_to_best,
-        cutoff=2,
-        max_segments=20,
-        max_loops=100,
-    )
+    scc_counter += 1
 
-
-nx.shortest_path(graph, left_key, mid_key)
-nx.shortest_path(graph, mid_key, left_key)
+movie_key = 'Elephant (2003)'
