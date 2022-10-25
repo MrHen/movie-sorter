@@ -5,7 +5,7 @@ from textwrap import dedent
 
 import constants
 from bubble import bubble_pass, run_bubble_sorting
-from files import (reload_all, reload_diary, run_search, save_all,
+from files import (reload_all, reload_diary, run_search, save_all, save_arc_data,
                    save_hierarchy)
 from graph import memo_to_graph
 from labels import build_movie_label
@@ -418,7 +418,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Robot & Frank (2012)")
-reverse_memo(memo, "Naqoyqatsi (2002)", "Powaqqatsi (1988)")
+reverse_memo(memo, "Dr. Dolittle 2 (2001)", "Langoliers (1995)")
 print_memo(memo, "Fast & Furious (2009)", rankingsByKey)
 print_memo(memo, "It Happened One Night (1934)", rankingsByKey)
 
@@ -571,6 +571,22 @@ print("\n" + "\n".join([
     build_movie_label(movie)
     for movie in target_month_entries
 ]))
+
+graph = memo_to_graph(memo)
+subgraph = graph.subgraph([movie["Key"] for movie in target_month_entries])
+save_hierarchy(
+    graph=subgraph,
+    base_dir=base_dir,
+    ranking_worst_to_best=ranking_worst_to_best,
+)
+
+graph = memo_to_graph(memo)
+subgraph = graph.subgraph([movie["Key"] for movie in target_month_entries])
+save_arc_data(
+    graph=subgraph,
+    base_dir=base_dir,
+    ranking_worst_to_best=ranking_worst_to_best,
+)
 
 run_fix_all_loops(
     ranking_worst_to_best=ranking_worst_to_best,

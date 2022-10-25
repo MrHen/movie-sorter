@@ -220,7 +220,7 @@ cycles = [
 ]
 
 
-### Connected
+### Cycles from Ranked
 
 from loops import run_fix_multi_loop
 import networkx as nx
@@ -229,18 +229,24 @@ from pprint import pprint
 from functools import reduce
 from itertools import islice
 from graph import memo_to_graph
+from loops_graph import fix_graph
 
 graph = memo_to_graph(memo)
 
-scc_counter = 0
-scc_max = 200
-
-connected_list = []
-for connected in nx.strongly_connected_components(graph):
-    print(f'scc. f{scc_counter}. len={len(connected)}')
-    connected_list.append(connected)
-    if len(connected) > 1:
-        break
-    scc_counter += 1
-
-movie_key = 'Elephant (2003)'
+step = 5
+cutoff = 10
+max_rank = len(ranking_worst_to_best)
+for i in range(max_rank, 0, -step):
+    nodes = [
+        movie["Key"]
+        for movie in ranking_worst_to_best[i-step:i]
+    ]
+    subgraph = graph.subgraph(nodes)
+    fix_graph(
+        graph=subgraph,
+        memo=memo,
+        ranking_worst_to_best=ranking_worst_to_best,
+        cutoff=cutoff,
+        max_segments=20,
+        max_loops=100,
+    )

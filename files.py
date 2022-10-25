@@ -151,13 +151,49 @@ def save_hierarchy(
             "position": ranking["Position"],
             "path": "|".join([
                 f"all",
-                str(math.floor(math.log2(ranking['Position']))),
-                str(ranking['Position']),
+                str(math.floor(math.log2(ranking['Position']))).zfill(4),
+                str(ranking['Position']).zfill(4),
                 ranking["Key"],
             ]),
         }
-        for ranking in ranking_worst_to_best[-500:-400]
+        for ranking in ranking_worst_to_best
+        if graph.has_node(ranking["Key"])
     ]
     edgesFile = f"{base_dir}/hierarchy.json"
     with open(edgesFile, 'w', newline='', encoding='UTF-8') as file:
-        file.write(json.dumps(edgeData))
+        file.write(json.dumps(edgeData, indent=2))
+
+
+def save_arc_data(
+    *,
+    base_dir,
+    graph,
+    ranking_worst_to_best,
+):
+    nodes = list()
+    links = list()
+    for ranking in ranking_worst_to_best:
+        if not graph.has_node(ranking["Key"]):
+            continue
+        nodes.append({
+            "id": ranking["Key"],
+            "group": '{0:.2}'.format(ranking["Rating"]),
+            "year": ranking["Year"],
+            "decade": ranking["Decade"],
+            "position": ranking["Position"],
+        })
+        links.extend([
+            {
+                "source": ranking["Key"],
+                "target": successor,
+                "value": 1,
+            }
+            for successor in graph.successors(ranking["Key"])
+        ])
+    arcData = {
+        "nodes": nodes,
+        "links": links,
+    }
+    arcDataFile = f"{base_dir}/arc_data.json"
+    with open(arcDataFile, 'w', newline='', encoding='UTF-8') as file:
+        file.write(json.dumps(arcData, indent=2))
