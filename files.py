@@ -2,20 +2,68 @@ import csv
 import json
 import math
 
+import constants
 from dairy import line_to_key, load_diary
-from memo import write_memo
-from rankings import load_rankings, write_rankings
+from memo import load_memo, write_memo
+from rankings import load_rankings, load_rankings_basic, write_rankings
 from ratings import load_ratings, rating_sorter
 from thresholds import build_description, build_thresholds
 
 
-def run_search(memo, ranking_worst_to_best, movie, use_label=False):
+def load_diary_file(*, base_dir=constants.BASE_DIR):
+    ignore_diary_keys = frozenset({
+        "Family Dog (1987)",
+    })
+    rankings_file = f"{base_dir}/diary.csv"
+    with open(rankings_file, 'r', encoding='UTF-8') as file:
+        diary_entries = load_diary(file)
+    return [
+        entry
+        for entry in diary_entries
+        if line_to_key(entry) not in ignore_diary_keys
+    ]
+
+
+def load_ratings_file(*, base_dir=constants.BASE_DIR):
+    ratings_file = f"{base_dir}/ratings.csv"
+    with open(ratings_file, 'r', encoding='UTF-8') as file:
+        ratings_unsorted = load_ratings(file)
+    return ratings_unsorted
+
+
+def load_memo_file(*, filename='memo.csv', base_dir=constants.BASE_DIR):
+    memo_file = f"{base_dir}/{filename}"
+    with open(memo_file, 'r', encoding='UTF-8') as file:
+        memo_data = load_memo(file)
+    return memo_data
+
+
+def write_memo_file(memo_output, *, base_dir=constants.BASE_DIR):
+    memo_file = f"{base_dir}/memo.csv"
+    with open(memo_file, 'w', newline='', encoding='UTF-8') as file:
+        write_memo(file, memo_output)
+
+
+def load_rankings_file(*, base_dir=constants.BASE_DIR):
+    rankings_file = f"{base_dir}/rankings.csv"
+    with open(rankings_file, 'r', encoding='UTF-8') as file:
+        rankings_unsorted = load_rankings_basic(file)
+    return rankings_unsorted
+
+
+def write_rankings_file(rankings_output, *, base_dir=constants.BASE_DIR):
+    rankingsFile = f"{base_dir}/rankings.csv"
+    with open(rankingsFile, 'w', newline='', encoding='UTF-8') as file:
+        write_rankings(file, rankings_output)
+
+
+def run_search(memo, ranking_worst_to_best, movie, reverse=False, use_label=False):
     left = 0
     right = len(ranking_worst_to_best) - 1
     while left <= right:
         curr = (left + right) // 2
         curr_movie = ranking_worst_to_best[curr]
-        comp_result = rating_sorter(movie, curr_movie, memo, use_label=use_label)
+        comp_result = rating_sorter(movie, curr_movie, memo, reverse=reverse, use_label=use_label)
         print(f"Searching... {left}|{curr}|{right} -> {comp_result}")
         if comp_result == 1:
             left = curr + 1
@@ -28,18 +76,14 @@ def run_search(memo, ranking_worst_to_best, movie, use_label=False):
 
 def reload_all(*, base_dir):
     # LOAD RATINGS
-    ratings_file = f"{base_dir}/ratings.csv"
-    with open(ratings_file, 'r', encoding='UTF-8') as file:
-        ratings_unsorted = load_ratings(file)
+    ratings_unsorted = load_ratings_file(base_dir=base_dir)
     # LOAD RANKINGS
     rankings_file = f"{base_dir}/rankings.csv"
     with open(rankings_file, 'r', encoding='UTF-8') as file:
         rankings_best_to_worst = load_rankings(file, ratings_unsorted)
     rankings_worst_to_best = list(reversed(rankings_best_to_worst))
     # LOAD DIARY
-    rankings_file = f"{base_dir}/diary.csv"
-    with open(rankings_file, 'r', encoding='UTF-8') as file:
-        diary_entries = load_diary(file)
+    diary_entries = load_diary_file(base_dir=base_dir)
     return {
         "ratings": ratings_unsorted,
         "rankings": rankings_worst_to_best,

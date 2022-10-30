@@ -32,6 +32,11 @@ def load_ratings(file):
 
 
 def rating_sorter(a, b, memo, verbose=True, reverse=False, use_label=False):
+    detail = rating_sorter_detail(a, b, memo, verbose=verbose, reverse=reverse, use_label=use_label)
+    return detail["result"]
+
+def rating_sorter_detail(a, b, memo, verbose=True, reverse=False, use_label=False):
+    change = None
     a_key = rating_to_key(a)
     b_key = rating_to_key(b)
     if use_label:
@@ -51,15 +56,25 @@ def rating_sorter(a, b, memo, verbose=True, reverse=False, use_label=False):
         winner_label = prompt_for_winner(a_label, b_label)
         if winner_label == a_label:
             winner_key = a_key
+            loser_key = b_key
         else:
             winner_key = b_key
+            loser_key = a_key
         memo[memo_key] = winner_key
+        change = {
+            "winner": winner_key,
+            "loser": loser_key,
+        }
+    detail = {
+        "change": change,
+    }
     if a_key == winner_key:
-        return -1 if reverse else 1
+        detail["result"] = -1 if reverse else 1
     elif b_key == winner_key:
-        return 1 if reverse else -1
+        detail["result"] = 1 if reverse else -1
     else:
-        return 0
+        detail["result"] = 0
+    return detail
 
 
 def rating_cmp(memo, verbose=True, use_label=False):

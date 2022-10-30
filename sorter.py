@@ -125,7 +125,12 @@ def run_group_sorting(ratingsUnsorted):
     return rankingWorstToBest
 
 
-def run_missing_insert(memo, ratings_unsorted, ranking_worst_to_best, insert=True):
+def run_missing_insert(
+    memo,
+    ratings_unsorted,
+    ranking_worst_to_best,
+    insert=True,
+):
     ratings_by_key = {
         rating_to_key(rating): rating
         for rating in ratings_unsorted

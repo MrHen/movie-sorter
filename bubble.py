@@ -1,4 +1,4 @@
-from ratings import rating_sorter, rating_to_key
+from ratings import rating_sorter, rating_sorter_detail, rating_to_key
 
 
 def sort_bubble_step(
@@ -13,7 +13,7 @@ def sort_bubble_step(
 ):
     left = ratings[index]
     right = ratings[index+step]
-    comp_result = rating_sorter(
+    detail = rating_sorter_detail(
         left,
         right,
         memo,
@@ -21,12 +21,12 @@ def sort_bubble_step(
         reverse=reverse,
         use_label=use_label,
     )
-    can_swap = comp_result == 1
+    can_swap = detail["result"] == 1
     if do_swap and can_swap:
         print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
         ratings[index] = right
         ratings[index+step] = left
-    return can_swap
+    return detail
 
 
 def bubble_pass(
@@ -36,14 +36,16 @@ def bubble_pass(
     step=1,
     do_swap=False,
     max_changes=None,
+    max_changes_memo=None,
     reverse=False,
     use_label=False,
 ):
-    changes = 0
+    changes_rankings = 0
+    changes_memo = []
     if reverse:
         rankings = list(reversed(rankings))
     for i in range(len(rankings) - step):
-        saw_change = sort_bubble_step(
+        detail = sort_bubble_step(
             memo,
             rankings,
             i,
@@ -53,11 +55,15 @@ def bubble_pass(
             reverse=reverse,
             use_label=use_label,
         )
-        if saw_change:
-            changes += 1
-            if max_changes and max_changes <= changes:
+        if detail["result"] == 1:
+            changes_rankings += 1
+            if max_changes and max_changes <= changes_rankings:
                 break
-    return changes
+        if detail["change"]:
+            changes_memo.append(detail["change"])
+            if max_changes_memo and max_changes_memo <= len(changes_memo):
+                break
+    return changes_memo
 
 
 def run_bubble_sorting(

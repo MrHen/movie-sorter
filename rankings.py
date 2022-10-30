@@ -32,6 +32,19 @@ def load_rankings(file, ratings=None):
     return sorted(ratings, key=itemgetter("Position"))
 
 
+def load_rankings_basic(file):
+    reader = csv.DictReader(file)
+    ratings = [
+        {
+            **row,
+            "Key": ranked_to_key(row),
+            "Position": int(row["Position"]),
+        }
+        for row in reader
+    ]
+    return ratings
+
+
 def write_rankings(file, rankings):
     fieldnames = ["Position", "Name", "Year", "URL", "Description"]
     writer = csv.DictWriter(
