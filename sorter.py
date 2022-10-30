@@ -424,7 +424,7 @@ rankingsByKey = {
 
 clear_memo(memo, "Robot & Frank (2012)")
 reverse_memo(memo, "Dr. Dolittle 2 (2001)", "Langoliers (1995)")
-print_memo(memo, "Fast & Furious (2009)", rankingsByKey)
+print_memo(memo, "F9 (2021)", rankingsByKey)
 print_memo(memo, "It Happened One Night (1934)", rankingsByKey)
 
 add_memo(rankingsByKey, "Candyman (1992)", "Candyman (2021)", verbose=True)

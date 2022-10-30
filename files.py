@@ -57,14 +57,23 @@ def write_rankings_file(rankings_output, *, base_dir=constants.BASE_DIR):
         write_rankings(file, rankings_output)
 
 
-def run_search(memo, ranking_worst_to_best, movie, reverse=False, use_label=False):
+def run_search(
+    memo,
+    ranking_worst_to_best,
+    movie,
+    reverse=False,
+    use_label=False,
+    *,
+    verbose=True
+):
     left = 0
     right = len(ranking_worst_to_best) - 1
     while left <= right:
         curr = (left + right) // 2
         curr_movie = ranking_worst_to_best[curr]
         comp_result = rating_sorter(movie, curr_movie, memo, reverse=reverse, use_label=use_label)
-        print(f"Searching... {left}|{curr}|{right} -> {comp_result}")
+        if verbose:
+            print(f"Searching... {left}|{curr}|{right} -> {comp_result}")
         if comp_result == 1:
             left = curr + 1
         elif comp_result == -1:

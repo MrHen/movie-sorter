@@ -56,8 +56,8 @@ def group_diary_by_tag(
                         tag_index: tag,
                     }
                     for entry in diary_entries
-                    if entry.get(tags_index)
-                    for tag in entry.get(tags_index)
+                    if entry.get(tags_index, None)
+                    for tag in entry.get(tags_index, [])
                 ],
                 key=itemgetter(tag_index)
             ),

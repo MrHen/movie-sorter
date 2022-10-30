@@ -31,12 +31,26 @@ def load_ratings(file):
     return sorted(ratings, key=itemgetter("Rating"))
 
 
-def rating_sorter(a, b, memo, verbose=True, reverse=False, use_label=False):
+def rating_sorter(
+    a,
+    b,
+    memo,
+    *,
+    verbose=True,
+    reverse=False,
+    use_label=False,
+    changes=None,
+):
     detail = rating_sorter_detail(a, b, memo, verbose=verbose, reverse=reverse, use_label=use_label)
+    if changes is not None and detail["change"]:
+        changes.append(detail["change"])
     return detail["result"]
 
+
 def rating_sorter_detail(a, b, memo, verbose=True, reverse=False, use_label=False):
-    change = None
+    detail = {
+        "change": None,
+    }
     a_key = rating_to_key(a)
     b_key = rating_to_key(b)
     if use_label:
@@ -46,7 +60,8 @@ def rating_sorter_detail(a, b, memo, verbose=True, reverse=False, use_label=Fals
         a_label = a_key
         b_label = b_key
     if a_key == b_key:
-        return 0
+        detail["result"] = 0
+        return detail
     memo_key = frozenset({a_key, b_key})
     if memo_key in memo:
         winner_key = memo[memo_key]
@@ -61,13 +76,10 @@ def rating_sorter_detail(a, b, memo, verbose=True, reverse=False, use_label=Fals
             winner_key = b_key
             loser_key = a_key
         memo[memo_key] = winner_key
-        change = {
+        detail["change"] = {
             "winner": winner_key,
             "loser": loser_key,
         }
-    detail = {
-        "change": change,
-    }
     if a_key == winner_key:
         detail["result"] = -1 if reverse else 1
     elif b_key == winner_key:
@@ -77,5 +89,12 @@ def rating_sorter_detail(a, b, memo, verbose=True, reverse=False, use_label=Fals
     return detail
 
 
-def rating_cmp(memo, verbose=True, use_label=False):
-    return cmp_to_key(lambda a, b: rating_sorter(a, b, memo, verbose=verbose, use_label=use_label))
+def rating_cmp(memo, verbose=True, use_label=False, changes=None):
+    return cmp_to_key(lambda a, b: rating_sorter(
+        a,
+        b,
+        memo,
+        verbose=verbose,
+        use_label=use_label,
+        changes=changes,
+    ))

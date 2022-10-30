@@ -8,13 +8,12 @@ from loops import run_fix_multi_loop
 from loops_graph import graph_to_loops
 from memo import set_memo
 from rankings import ranked_to_key
-from ratings import rating_to_key
+from ratings import rating_cmp, rating_to_key
+from tags import group_diary_by_tag
 from thresholds import build_description, build_thresholds
 
 
 memo = {}
-diary_entries = []
-ratings_unsorted = []
 rankings_worst_to_best = []
 movies_by_key = {}
 
@@ -45,17 +44,13 @@ rating_curve = {
 }
 sum(rating_curve.values())
 
-
 def reset():
-    global memo
-    memo = load_memo_file()
+    # Need to clear / update in order to preserve the global reference
+    memo.clear()
+    memo.update(load_memo_file())
 
 
 def reload():
-    global diary_entries
-    global ratings_unsorted
-    global rankings_worst_to_best
-    global movies_by_key
     diary_entries = load_diary_file()
     ratings_unsorted = load_ratings_file()
     rankings_unsorted = load_rankings_file()
@@ -76,7 +71,7 @@ def reload():
     ranking_keys = frozenset(rankings_by_key.keys())
     diary_keys = frozenset(diary_by_key.keys())
     movie_keys = rating_keys | ranking_keys | diary_keys
-    movies_by_key = {
+    movies = {
         movie_key: {
             **ratings_by_key.get(movie_key, {}),
             **{
@@ -93,11 +88,17 @@ def reload():
         }
         for movie_key in movie_keys
     }
-    rankings_worst_to_best = sorted([
+    rankings = sorted([
         movie
-        for movie in movies_by_key.values()
+        for movie in movies.values()
         if movie_has_ranking(movie)
     ], key=itemgetter("Position"), reverse=True)
+    # Need to clear / update in order to preserve the global reference
+    movies_by_key.clear()
+    movies_by_key.update(movies)
+    # Need to clear / extend in order to preserve the global reference
+    rankings_worst_to_best.clear()
+    rankings_worst_to_best.extend(rankings)
 
 
 def movie_has_ranking(movie):
@@ -114,6 +115,15 @@ def movie_has_diary(movie):
 
 def movie_has_diary_tag(movie, tag):
     return tag in (movie.get('Tags', None) or [])
+
+
+def movie_tags(*, movies_by_key=movies_by_key):
+    return {
+        tag
+        for movie in movies_by_key.values()
+        for tag in (movie.get('Tags', None) or [])
+        if tag not in ["ignore-ranking", "profile", "to-review"]
+    }
 
 
 # SAVE
@@ -167,6 +177,7 @@ def update_rankings(
     memo,
     movies_by_key,
     rankings_worst_to_best,
+    verbose=False,
 ):
     missing_keys = {
         movie_key
@@ -175,7 +186,12 @@ def update_rankings(
     }
     for missing_key in missing_keys:
         missing_movie = movies_by_key[missing_key]
-        missing_index = run_search(memo, rankings_worst_to_best, missing_movie)
+        missing_index = run_search(
+            memo,
+            rankings_worst_to_best,
+            missing_movie,
+            verbose=verbose,
+        )
         rankings_worst_to_best.insert(missing_index, missing_movie)
 
 
@@ -210,6 +226,49 @@ def update_diary(
     return output
 
 
+# SORTING
+def sort_movies(
+    movies,
+    *,
+    memo=memo,
+    verbose=True,
+    reverse=True,
+):
+    changes = []
+    result = sorted(
+        movies,
+        key=rating_cmp(memo, verbose=verbose, changes=changes),
+        reverse=reverse,
+    )
+    return {
+        "movies": result,
+        "changes": changes,
+    }
+
+
+def sort_by_tag(
+    *,
+    target_tag,
+    movies_by_key,
+    memo,
+    verbose=True,
+    reverse=True,
+):
+    movies = [
+        movie
+        for movie in movies_by_key.values()
+        if target_tag in (movie.get('Tags', None) or [])
+    ]
+    movies = sorted(movies, key=itemgetter("Watched Date"))
+    result = sort_movies(
+        movies,
+        memo=memo,
+        verbose=verbose,
+        reverse=reverse,
+    )
+    return result
+
+
 # FIX SHORT CYCLES
 def fix_adjacent(
     *,
@@ -235,7 +294,7 @@ def fix_small_loop(
     *,
     memo,
     ranking_worst_to_best,
-    verbose=True,
+    verbose=False,
     max_segments=20,
 ):
     changes = []
@@ -245,7 +304,7 @@ def fix_small_loop(
         graph=graph,
         rankings=ranking_best_to_worst,
         cutoff=2,
-        max_loops=1,
+        max_loops=100,
         verbose=verbose,
     )
     if loops:
@@ -267,7 +326,58 @@ def fix_small_loop(
     return changes
 
 
-def clean_up_gen(
+# RUNNERS
+
+def run_save(
+    *,
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+    stars_worst_to_best=stars_worst_to_best,
+    rating_curve=rating_curve,
+):
+    rerank(
+        rankings_worst_to_best=rankings_worst_to_best,
+        stars_worst_to_best=stars_worst_to_best,
+        rating_curve=rating_curve,
+    )
+    save_all(
+        memo=memo,
+        rankings_worst_to_best=rankings_worst_to_best,
+    )
+
+
+def run_diary_update(
+    *,
+    memo=memo,
+    movies_by_key=movies_by_key,
+    rankings_worst_to_best=rankings_worst_to_best,
+    rating_curve=rating_curve,
+    stars_worst_to_best=stars_worst_to_best,
+):
+    print(f"memo: {len(memo)}")
+    print(f"rankings_worst_to_best: {len(rankings_worst_to_best)}")
+    update_rankings(
+        memo=memo,
+        movies_by_key=movies_by_key,
+        rankings_worst_to_best=rankings_worst_to_best,
+    )
+    results = sorted(update_diary(
+        memo=memo,
+        rankings_worst_to_best=rankings_worst_to_best,
+        rating_curve=rating_curve,
+        stars_worst_to_best=stars_worst_to_best,
+        movies_by_key=movies_by_key,
+    ))
+    run_save(
+        rankings_worst_to_best=rankings_worst_to_best,
+        stars_worst_to_best=stars_worst_to_best,
+        rating_curve=rating_curve,
+        memo=memo,
+    )
+    return results
+
+
+def run_clean_up_gen(
     *,
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
@@ -287,7 +397,7 @@ def clean_up_gen(
     return (change for change in changes)
 
 
-def clean_up(
+def run_clean_up(
     *,
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
@@ -297,56 +407,128 @@ def clean_up(
     while saw_change:
         print('Starting clean up...')
         saw_change = False
-        changes = clean_up_gen(
+        changes = run_clean_up_gen(
             memo=memo,
             rankings_worst_to_best=rankings_worst_to_best,
         )
         for change in changes:
-            print(f'\t... saw change {change["winner"]} >>> {change["loser"]}')
+            print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
             total_changes.append(change)
             saw_change = True
+    return total_changes
 
 
-# FIX TOPICAL CYCLES
+def run_tags_gen(
+    *,
+    memo=memo,
+    movies_by_key=movies_by_key,
+    rankings_worst_to_best=rankings_worst_to_best,
+    verbose=False,
+):
+    print(f'\t... running fix_adjacent')
+    changes = fix_adjacent(
+        memo=memo,
+        rankings_worst_to_best=rankings_worst_to_best,
+    )
+    if not changes:
+        print(f'\t... running fix_small_loop')
+        changes = fix_small_loop(
+            memo=memo,
+            ranking_worst_to_best=rankings_worst_to_best,
+        )
+    if not changes:
+        tags = sorted(movie_tags())
+        for tag in tags:
+            print(f'\t... running sort_by_tag for {tag}')
+            result = sort_by_tag(
+                target_tag=tag,
+                memo=memo,
+                movies_by_key=movies_by_key,
+                verbose=verbose,
+            )
+            changes = result['changes']
+            if changes:
+                break
+    changes = changes or []
+    return (change for change in changes)
 
-# FIX EVERYTHING
+
+def run_tags(
+    *,
+    memo=memo,
+    movies_by_key=movies_by_key,
+    rankings_worst_to_best=rankings_worst_to_best,
+):
+    total_changes = []
+    saw_change = True
+    while saw_change:
+        print('Starting run_tags...')
+        saw_change = False
+        changes = run_tags_gen(
+            memo=memo,
+            movies_by_key=movies_by_key,
+            rankings_worst_to_best=rankings_worst_to_best,
+        )
+        for change in changes:
+            print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
+            total_changes.append(change)
+            saw_change = True
+    return total_changes
 
 
-### ONCE PER RUN
-
+### ONCE PER SHELL
 reset()
 
 
 ### ONCE PER DIARY CYCLE
-
 reload()
+results = run_diary_update()
+pprint(results)
 
-update_rankings(
-    memo=memo,
-    movies_by_key=movies_by_key,
-    rankings_worst_to_best=rankings_worst_to_best,
-)
-pprint(sorted(update_diary(
-    memo=memo,
-    rankings_worst_to_best=rankings_worst_to_best,
-    rating_curve=rating_curve,
-    stars_worst_to_best=stars_worst_to_best,
-    movies_by_key=movies_by_key,
-)))
-
-rerank(
-    rankings_worst_to_best=rankings_worst_to_best,
-    stars_worst_to_best=stars_worst_to_best,
-    rating_curve=rating_curve,
-)
-save_all(
-    memo=memo,
-    rankings_worst_to_best=rankings_worst_to_best,
-)
 
 ### CLEAN UP
+results = run_clean_up()
+pprint(results)
+run_save()
 
-clean_up(
-    memo=memo,
-    rankings_worst_to_best=rankings_worst_to_best,
+
+# FIX TOPICAL CYCLES
+results = run_tags()
+pprint(results)
+run_save()
+
+# FIX EVERYTHING
+
+
+
+#### SANDBOX
+
+import networkx as nx
+
+graph = memo_to_graph(memo)
+entries_by_tag = group_diary_by_tag(diary_entries=movies_by_key.values())
+target_tag = "cc2022"
+
+subgraph = graph.subgraph([
+    entry['Key']
+    for entry in entries_by_tag[target_tag]
+])
+
+changes = []
+target_entries = sorted(
+    entries_by_tag[target_tag],
+    key=rating_cmp(memo, verbose=True, changes=changes),
+    reverse=True,
 )
+
+result = sort_movies(entries_by_tag[target_tag])
+
+tags = movie_tags()
+
+target_tag = list(tags)[0]
+
+entries_by_tag = [
+    movie
+    for movie in movies_by_key.values()
+    if target_tag in (movie.get('Tags', None) or [])
+]
