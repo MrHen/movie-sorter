@@ -215,7 +215,7 @@ def fix_adjacent(
     *,
     memo,
     rankings_worst_to_best,
-    verbose=True,
+    verbose=False,
 ):
     changes_memo = bubble_pass(
         memo,
@@ -259,12 +259,52 @@ def fix_small_loop(
         )
         if fix:
             change = {
-                "loser": fix["left"],
-                "winner": fix["right"],
+                "loser": fix["right"],
+                "winner": fix["left"],
             }
             changes.append(change)
-            set_memo(memo, change["loser"], change["winner"])
+            set_memo(memo, change["loser"], change["winner"], verbose=verbose)
     return changes
+
+
+def clean_up_gen(
+    *,
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+):
+    print(f'\t... running fix_adjacent')
+    changes = fix_adjacent(
+        memo=memo,
+        rankings_worst_to_best=rankings_worst_to_best,
+    )
+    if not changes:
+        print(f'\t... running fix_small_loop')
+        changes = fix_small_loop(
+            memo=memo,
+            ranking_worst_to_best=rankings_worst_to_best,
+        )
+    changes = changes or []
+    return (change for change in changes)
+
+
+def clean_up(
+    *,
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+):
+    total_changes = []
+    saw_change = True
+    while saw_change:
+        print('Starting clean up...')
+        saw_change = False
+        changes = clean_up_gen(
+            memo=memo,
+            rankings_worst_to_best=rankings_worst_to_best,
+        )
+        for change in changes:
+            print(f'\t... saw change {change["winner"]} >>> {change["loser"]}')
+            total_changes.append(change)
+            saw_change = True
 
 
 # FIX TOPICAL CYCLES
@@ -304,12 +344,9 @@ save_all(
     rankings_worst_to_best=rankings_worst_to_best,
 )
 
-# changes = fix_adjacent(
-#     memo=memo,
-#     rankings_worst_to_best=rankings_worst_to_best,
-# )
+### CLEAN UP
 
-# changes = fix_small_loop(
-#     memo=memo,
-#     ranking_worst_to_best=rankings_worst_to_best,
-# )
+clean_up(
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+)
