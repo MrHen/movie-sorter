@@ -423,7 +423,7 @@ rankingsByKey = {
 }
 
 clear_memo(memo, "Robot & Frank (2012)")
-reverse_memo(memo, "Dr. Dolittle 2 (2001)", "Langoliers (1995)")
+reverse_memo(memo, "The Greatest Showman (2017)", "The Dot and the Line: A Romance in Lower Mathematics (1965)")
 print_memo(memo, "F9 (2021)", rankingsByKey)
 print_memo(memo, "It Happened One Night (1934)", rankingsByKey)
 
@@ -522,15 +522,16 @@ run_rank_by_subject(
 ###
 entries_by_tag = group_diary_by_tag(diary_entries=diary_entries)
 
-target_tag = "movie-club"
 target_tag = "marathon-final-destination"
 target_tag = "cc2022"
+target_tag = "movie-club"
 
 target_tag_entries = rank_diary_by_subject(
     memo=memo,
     ranking_worst_to_best=ranking_worst_to_best,
     entries_by_subject=entries_by_tag,
     target_subject=target_tag,
+    use_position=True,
 )
 
 print("\n" + "\n".join([

@@ -4,6 +4,7 @@ from bubble import bubble_pass
 from dairy import line_to_key
 from files import load_diary_file, load_memo_file, load_rankings_file, load_ratings_file, reload_all, run_search, write_memo_file, write_rankings_file
 from graph import memo_to_graph
+from labels import build_movie_label
 from loops import run_fix_multi_loop
 from loops_graph import graph_to_loops
 from memo import set_memo
@@ -354,8 +355,6 @@ def run_diary_update(
     rating_curve=rating_curve,
     stars_worst_to_best=stars_worst_to_best,
 ):
-    print(f"memo: {len(memo)}")
-    print(f"rankings_worst_to_best: {len(rankings_worst_to_best)}")
     update_rankings(
         memo=memo,
         movies_by_key=movies_by_key,
@@ -498,6 +497,21 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
+
+
+
+#### UTILITIES
+
+target_tag = 'movie-club'
+results = sort_by_tag(
+    target_tag=target_tag,
+    movies_by_key=movies_by_key,
+    memo=memo,
+)
+print("\n" + "\n".join([
+    build_movie_label(movie)
+    for movie in results['movies']
+]))
 
 
 
