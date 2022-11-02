@@ -193,7 +193,7 @@ def save_all(
 
 def save_hierarchy(
     *,
-    base_dir,
+    base_dir=constants.BASE_DIR,
     graph,
     ranking_worst_to_best,
 ):

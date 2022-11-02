@@ -2,7 +2,7 @@ from pprint import pprint
 from operator import itemgetter
 from bubble import bubble_pass
 from dairy import line_to_key
-from files import load_diary_file, load_memo_file, load_rankings_file, load_ratings_file, reload_all, run_search, write_memo_file, write_rankings_file
+from files import load_diary_file, load_memo_file, load_rankings_file, load_ratings_file, reload_all, run_search, save_arc_data, save_hierarchy, write_memo_file, write_rankings_file
 from graph import memo_to_graph
 from labels import build_movie_label
 from loops import run_fix_multi_loop
@@ -12,7 +12,7 @@ from rankings import ranked_to_key
 from ratings import rating_cmp, rating_to_key
 from tags import group_diary_by_tag
 from thresholds import build_description, build_thresholds
-
+import constants
 
 memo = {}
 rankings_worst_to_best = []
@@ -124,6 +124,14 @@ def movie_tags(*, movies_by_key=movies_by_key):
         for movie in movies_by_key.values()
         for tag in (movie.get('Tags', None) or [])
         if tag not in ["ignore-ranking", "profile", "to-review"]
+    }
+
+
+def movie_months(*, movies_by_key=movies_by_key):
+    return {
+        movie.get('Watched Month')
+        for movie in movies_by_key.values()
+        if movie.get('Watched Month')
     }
 
 
@@ -259,6 +267,29 @@ def sort_by_tag(
         movie
         for movie in movies_by_key.values()
         if target_tag in (movie.get('Tags', None) or [])
+    ]
+    movies = sorted(movies, key=itemgetter("Watched Date"))
+    result = sort_movies(
+        movies,
+        memo=memo,
+        verbose=verbose,
+        reverse=reverse,
+    )
+    return result
+
+
+def sort_by_month(
+    *,
+    target_month,
+    movies_by_key,
+    memo,
+    verbose=True,
+    reverse=True,
+):
+    movies = [
+        movie
+        for movie in movies_by_key.values()
+        if target_month == movie.get('Watched Month', None)
     ]
     movies = sorted(movies, key=itemgetter("Watched Date"))
     result = sort_movies(
@@ -475,6 +506,65 @@ def run_tags(
     return total_changes
 
 
+def run_months_gen(
+    *,
+    memo=memo,
+    movies_by_key=movies_by_key,
+    rankings_worst_to_best=rankings_worst_to_best,
+    verbose=False,
+):
+    print(f'\t... running fix_adjacent')
+    changes = fix_adjacent(
+        memo=memo,
+        rankings_worst_to_best=rankings_worst_to_best,
+    )
+    if not changes:
+        print(f'\t... running fix_small_loop')
+        changes = fix_small_loop(
+            memo=memo,
+            ranking_worst_to_best=rankings_worst_to_best,
+        )
+    if not changes:
+        months = sorted(movie_months())
+        months = months[-3:]
+        for month in months:
+            print(f'\t... running sort_by_month for {month}')
+            result = sort_by_month(
+                target_month=month,
+                memo=memo,
+                movies_by_key=movies_by_key,
+                verbose=verbose,
+            )
+            changes = result['changes']
+            if changes:
+                break
+    changes = changes or []
+    return (change for change in changes)
+
+
+def run_months(
+    *,
+    memo=memo,
+    movies_by_key=movies_by_key,
+    rankings_worst_to_best=rankings_worst_to_best,
+):
+    total_changes = []
+    saw_change = True
+    while saw_change:
+        print('Starting run_months...')
+        saw_change = False
+        changes = run_months_gen(
+            memo=memo,
+            movies_by_key=movies_by_key,
+            rankings_worst_to_best=rankings_worst_to_best,
+        )
+        for change in changes:
+            print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
+            total_changes.append(change)
+            saw_change = True
+    return total_changes
+
+
 ### ONCE PER SHELL
 reset()
 
@@ -493,6 +583,7 @@ run_save()
 
 # FIX TOPICAL CYCLES
 results = run_tags()
+results = run_months()
 pprint(results)
 run_save()
 
@@ -513,36 +604,40 @@ print("\n" + "\n".join([
     for movie in results['movies']
 ]))
 
+months = sorted(movie_months())
+target_month = months[-1]
+results = sort_by_month(
+    target_month=target_month,
+    movies_by_key=movies_by_key,
+    memo=memo,
+)
+print("\n" + "\n".join([
+    build_movie_label(movie)
+    for movie in results['movies']
+]))
+
 
 
 #### SANDBOX
 
-import networkx as nx
+### SAVE DATA FOR CHARTS
 
-graph = memo_to_graph(memo)
-entries_by_tag = group_diary_by_tag(diary_entries=movies_by_key.values())
-target_tag = "cc2022"
-
-subgraph = graph.subgraph([
-    entry['Key']
-    for entry in entries_by_tag[target_tag]
-])
-
-changes = []
-target_entries = sorted(
-    entries_by_tag[target_tag],
-    key=rating_cmp(memo, verbose=True, changes=changes),
-    reverse=True,
+months = sorted(movie_months())
+target_month = months[-2]
+results = sort_by_month(
+    target_month=target_month,
+    movies_by_key=movies_by_key,
+    memo=memo,
 )
-
-result = sort_movies(entries_by_tag[target_tag])
-
-tags = movie_tags()
-
-target_tag = list(tags)[0]
-
-entries_by_tag = [
-    movie
-    for movie in movies_by_key.values()
-    if target_tag in (movie.get('Tags', None) or [])
-]
+graph = memo_to_graph(memo)
+subgraph = graph.subgraph([movie["Key"] for movie in results['movies']])
+save_hierarchy(
+    graph=subgraph,
+    base_dir=constants.BASE_DIR,
+    ranking_worst_to_best=rankings_worst_to_best,
+)
+save_arc_data(
+    graph=subgraph,
+    base_dir=constants.BASE_DIR,
+    ranking_worst_to_best=rankings_worst_to_best,
+)
