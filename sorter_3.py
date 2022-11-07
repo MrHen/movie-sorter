@@ -1,13 +1,16 @@
+from itertools import groupby
 from pprint import pprint
 from operator import itemgetter
+from textwrap import dedent
 from bubble import bubble_pass
 from dairy import line_to_key
 from files import load_diary_file, load_memo_file, load_rankings_file, load_ratings_file, reload_all, run_search, save_arc_data, save_hierarchy, write_memo_file, write_rankings_file
 from graph import memo_to_graph
 from labels import build_movie_label
+from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
 from loops import run_fix_multi_loop
 from loops_graph import graph_to_loops
-from memo import set_memo
+from memo import print_memo, set_memo
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_to_key
 from tags import group_diary_by_tag
@@ -135,6 +138,36 @@ def movie_months(*, movies_by_key=movies_by_key):
     }
 
 
+def build_decade_grouping(
+    *,
+    rankings_worst_to_best,
+):
+    ignoreStars = {
+        "0.5",
+        "1",
+        "1.5",
+        "2",
+        "2.5",
+        "3",
+        "3.5",
+    }
+    rankingBestToWorst = list(reversed(rankings_worst_to_best))
+    rankingsWithoutIgnored = filter(lambda movie: movie["Rating"] not in ignoreStars, rankingBestToWorst)
+    rankingsByDecade = sorted(rankingsWithoutIgnored, key=itemgetter("Decade", "Position"))
+    decadesBestToWorst = {
+        k: {
+            "decade": k,
+            "movies": [
+                movie
+                for movie in g
+                # if movie["Rating"] not in ignoreStars
+            ],
+        }
+        for k, g in groupby(rankingsByDecade, key=itemgetter("Decade"))
+    }
+    return decadesBestToWorst
+
+
 # SAVE
 def rerank(
     *,
@@ -171,7 +204,7 @@ def save_all(
             "Position": movie["Position"],
             "Name": movie["Name"],
             "Year": movie["Year"],
-            "URL": movie["Letterboxd URI"],
+            "LetterboxdURI": movie["Letterboxd URI"],
             "Description": movie["Description"],
         }
         for movie in rankings_best_to_worst
@@ -593,6 +626,12 @@ run_save()
 
 #### UTILITIES
 
+### PRINT MEMO
+
+print_memo(memo, "The Cat Returns (2002)", movies_by_key)
+
+
+### PRINT BY TAG
 target_tag = 'movie-club'
 results = sort_by_tag(
     target_tag=target_tag,
@@ -605,7 +644,7 @@ print("\n" + "\n".join([
 ]))
 
 months = sorted(movie_months())
-target_month = months[-1]
+target_month = months[-2]
 results = sort_by_month(
     target_month=target_month,
     movies_by_key=movies_by_key,
@@ -641,3 +680,55 @@ save_arc_data(
     base_dir=constants.BASE_DIR,
     ranking_worst_to_best=rankings_worst_to_best,
 )
+
+
+### DECADE LIST FIX
+
+count_min = 10
+count_max = 25
+decades_best_to_worst = build_decade_grouping(rankings_worst_to_best=rankings_worst_to_best)
+lists_by_decade = {}
+for decade in decades_best_to_worst:
+    movies = decades_best_to_worst[decade]["movies"][:count_max]
+    if len(movies) >= count_min:
+        lists_by_decade[decade] = movies
+        print(decade)
+        pprint([
+            movie["Key"]
+            for movie in movies
+        ])
+
+print(dedent(
+    f"""
+    <a href="https://letterboxd.com/mrhen/list/top-2010s">Top 2010s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-2000s">Top 2000s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-1990s">Top 1990s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-1980s">Top 1980s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-1970s">Top 1970s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-1960s">Top 1960s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-1950s">Top 1950s</a>
+    <a href="https://letterboxd.com/mrhen/list/top-1940s">Top 1940s</a>
+    """
+))
+
+list_names = load_list_names()
+list_data = [
+    load_list(list_name=list_name)
+    for list_name in list_names
+]
+
+for i, list_datum in enumerate(list_data):
+    print(f"{i}: {list_datum['metadata']['Name']}")
+
+for decade, movies in lists_by_decade.items():
+    decade_list = next(filter(lambda list_datum: f'top{decade}' in list_datum['metadata'].get('Tags', ''), list_data), None)
+    if not decade_list:
+        continue
+    if do_lists_match(movies, decade_list['movies']):
+        continue
+    print(f'boo {decade}')
+    print_list_comparison(movies, decade_list['movies'])
+
+
+merged = create_weighted_list(list_data=list_data, tag="stats-tracker")
+write_file_parts(movies=merged, filename="stats_combo")

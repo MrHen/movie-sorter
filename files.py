@@ -175,7 +175,7 @@ def save_all(
             "Position": movie["Position"],
             "Name": movie["Name"],
             "Year": movie["Year"],
-            "URL": movie["Letterboxd URI"],
+            "LetterboxdURI": movie["Letterboxd URI"],
             "Description": movie["Description"],
         }
         for movie in rankingBestToWorst
@@ -230,7 +230,7 @@ def save_arc_data(
             continue
         nodes.append({
             "id": ranking["Key"],
-            "group": '{0:.2}'.format(ranking["Rating"]),
+            "group": ranking["Rating"],
             "year": ranking["Year"],
             "decade": ranking["Decade"],
             "position": ranking["Position"],
