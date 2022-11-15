@@ -16,6 +16,8 @@ from ratings import rating_cmp, rating_to_key
 from tags import group_diary_by_tag
 from thresholds import build_description, build_thresholds
 import constants
+import networkx as nx
+
 
 memo = {}
 rankings_worst_to_best = []
@@ -656,6 +658,31 @@ print("\n" + "\n".join([
 ]))
 
 
+### PRINT DELTAS
+
+months = sorted(movie_months())
+changable = months[-2:]
+
+ranked_deltas = [
+    movie
+    for movie in rankings_worst_to_best
+    if movie.get("RatingDelta", True)
+]
+for movie in reversed(ranked_deltas):
+    if movie.get('Watched Month', None) in changable:
+        edit_diary = '!'
+    else:
+        edit_diary = ' '
+    if movie.get('RatingPrev', 0) < movie.get('RatingCurr', 0):
+        delta = '▲'
+    elif movie.get('RatingPrev', 0) > movie.get('RatingCurr', 0):
+        delta = '▼'
+    else:
+        delta = ' '
+    position_prefix = edit_diary + delta
+    label = build_movie_label(movie, position_prefix=position_prefix)
+    print(f"{label}\t changed from {movie.get('RatingPrev', '-')}\t to {movie.get('RatingCurr', '-')}")
+
 
 #### SANDBOX
 
@@ -711,6 +738,8 @@ print(dedent(
     """
 ))
 
+#
+
 list_names = load_list_names()
 list_data = [
     load_list(list_name=list_name)
@@ -732,3 +761,51 @@ for decade, movies in lists_by_decade.items():
 
 merged = create_weighted_list(list_data=list_data, tag="stats-tracker")
 write_file_parts(movies=merged, filename="stats_combo")
+
+merged = create_weighted_list(list_data=list_data, tag="watchlist")
+merged_unwatched = [
+    movie
+    for movie in merged
+    if line_to_key(movie) not in movies_by_key
+]
+write_file_parts(movies=merged_unwatched[:500], filename="watchlist_combo")
+
+"""
+removeBatch = async function (size, timeout=200) {
+    var startTime = performance.now()
+    count = 0;
+    removes = document.getElementsByClassName('list-item-remove');
+    max_remove = removes.length;
+    for (var count = 1; count <= size; count++) {
+        if (removes.length <= 1) {
+            break;
+        }
+        remove = removes[max_remove - count];
+        console.log(count, removes.length, remove);
+        remove.click();
+        await new Promise(r => setTimeout(r, timeout));
+    }
+    var endTime = performance.now()
+    var seconds = (endTime - startTime) / 1000;
+    console.log("Done.", seconds, seconds / size);
+}
+removeBatch(500, 100);
+"""
+
+### STEP CYCLE FIXER
+
+for i in range(1, len(rankings_worst_to_best)):
+    print(f"... starting {i}")
+    segment = rankings_worst_to_best[-i:]
+    root = segment[0]["Key"]
+    graph = memo_to_graph(memo)
+    subgraph = graph.subgraph([
+        movie['Key']
+        for movie in segment
+    ])
+    hit = False
+    for cycle in nx.simple_cycles(subgraph):
+        hit = True
+        pprint(cycle)
+        break
+    

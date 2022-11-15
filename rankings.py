@@ -46,7 +46,7 @@ def load_rankings_basic(file):
 
 
 def write_rankings(file, rankings):
-    fieldnames = ["Position", "Name", "Year", "URL", "Description"]
+    fieldnames = ["Position", "Name", "Year", "LetterboxdURI", "Description"]
     writer = csv.DictWriter(
         file,
         fieldnames=fieldnames,

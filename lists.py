@@ -84,7 +84,7 @@ def create_weighted_list(*, list_data, tag):
     stats_combo = [
         list_datum
         for list_datum in list_data
-        if list_datum["metadata"]["Tags"] == tag
+        if tag in list_datum["metadata"]["Tags"].split(", ")
     ]
     merged = merge_lists(lists=stats_combo)
     merged = multisort(
