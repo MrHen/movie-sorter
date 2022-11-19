@@ -561,7 +561,7 @@ def run_months_gen(
         )
     if not changes:
         months = sorted(movie_months())
-        months = months[-3:]
+        months = months[-2:]
         for month in months:
             print(f'\t... running sort_by_month for {month}')
             result = sort_by_month(

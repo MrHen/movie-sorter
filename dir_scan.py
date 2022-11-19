@@ -7,7 +7,7 @@ import csv
 import urllib.parse
 
 
-ALLOWED_EXT = {'mp4', 'mkv'}
+ALLOWED_EXT = {'mp4', 'mkv', 'm4v'}
 REJECTED_EXT = {'srt'}
 
 SKIP_REGEX = r'.*(trailer|Trailer).*'
@@ -81,7 +81,7 @@ dir_output = [
 dir_output_sorted = sorted(dir_output, key=itemgetter(0))
 dir_output_grouped = groupby(dir_output_sorted, key=itemgetter(0))
 for k, g in dir_output_grouped:
-    suffix = re.sub(r' +', '_', k)
+    suffix = re.sub(r'[ :]+', '_', k)
     print(f'writing out {suffix}')
     with open(f'dir_output_{suffix}.csv', 'w', newline='', encoding='UTF-8') as csvfile:
         writer = csv.writer(csvfile)
