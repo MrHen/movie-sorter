@@ -82,7 +82,7 @@ def fix_graph(
             verbose=verbose,
         )
         if loops:
-            print(f"\n{len(loops)} segments\n")
+            print(f"\n{len(loops)} loops\n")
             fix = run_fix_multi_loop(
                 loops,
                 # movie_key=ranking_key,

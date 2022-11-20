@@ -375,22 +375,33 @@ def fix_small_loop(
         verbose=verbose,
     )
     if loops:
-        print(f"\n{len(loops)} segments\n")
-        fix = run_fix_multi_loop(
+        change = fix_loops(
+            memo=memo,
+            verbose=verbose,
+            max_segments=max_segments,
+            loops=loops,
+        )
+        if change:
+            changes.append(change)
+    return changes
+
+
+def fix_loops(*, memo, verbose, max_segments, loops):
+    print(f"\n{len(loops)} segments\n")
+    segment = run_fix_multi_loop(
             loops,
             # movie_key=ranking_key,
             max_segments=max_segments,
             # sort_key=sort_key,
             # sort_reversed=sort_reversed,
         )
-        if fix:
-            change = {
-                "loser": fix["right"],
-                "winner": fix["left"],
+    if segment:
+        change = {
+                "loser": segment["right"],
+                "winner": segment["left"],
             }
-            changes.append(change)
-            set_memo(memo, change["loser"], change["winner"], verbose=verbose)
-    return changes
+        set_memo(memo, change["loser"], change["winner"], verbose=verbose)
+        return change
 
 
 # RUNNERS
@@ -600,6 +611,99 @@ def run_months(
     return total_changes
 
 
+def run_rankings_batch_cycle_fixer(
+    *,
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+    verbose=False,
+    max_segments=100,
+    max_cycles=30,
+):
+    i = 1
+    while i < len(rankings_worst_to_best):
+        print(f"... starting {i}")
+        cycles = set()
+        segment = rankings_worst_to_best[-i:]
+        graph = memo_to_graph(memo)
+        subgraph = graph.subgraph([
+            movie['Key']
+            for movie in segment
+        ])
+        for cycle in nx.simple_cycles(subgraph):
+            cycle = tuple([*cycle, cycle[0]])
+            if cycle not in cycles:
+                if verbose:
+                    pprint(cycle)
+                cycles.add(cycle)
+                if len(cycles) >= max_cycles:
+                    break
+        if cycles:
+            change = fix_loops(
+                memo=memo,
+                verbose=verbose,
+                max_segments=max_segments,
+                loops=cycles,
+            )
+            yield change
+        else:
+            change = None
+        if not change:
+            i += 1
+
+
+def run_cycle_fixer_gen(
+    *,
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+):
+    print(f'\t... running fix_adjacent')
+    changes = fix_adjacent(
+        memo=memo,
+        rankings_worst_to_best=rankings_worst_to_best,
+    )
+    if not changes:
+        print(f'\t... running fix_small_loop')
+        changes = fix_small_loop(
+            memo=memo,
+            ranking_worst_to_best=rankings_worst_to_best,
+        )
+    changes = changes or []
+    return changes
+
+
+def run_cycle_fixer(
+    *,
+    memo=memo,
+    rankings_worst_to_best=rankings_worst_to_best,
+    verbose=False,
+):
+    total_changes = []
+    saw_change = True
+    batch_gen = None
+    while saw_change:
+        print('Starting run_cycle_fixer...')
+        saw_change = False
+        changes = run_cycle_fixer_gen(
+            memo=memo,
+            rankings_worst_to_best=rankings_worst_to_best,
+        )
+        if not changes:
+            print('Starting run_rankings_batch_cycle_fixer...')
+            batch_gen = batch_gen or run_rankings_batch_cycle_fixer(
+                memo=memo,
+                rankings_worst_to_best=rankings_worst_to_best,
+                verbose=verbose,
+            )
+            change = next(batch_gen, None)
+            changes = [change] if change else []
+        for change in changes:
+            print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
+            total_changes.append(change)
+            saw_change = True
+    return total_changes
+
+
+
 ### ONCE PER SHELL
 reset()
 
@@ -624,7 +728,8 @@ run_save()
 
 # FIX EVERYTHING
 
-
+run_cycle_fixer(verbose=False)
+run_save()
 
 #### UTILITIES
 
@@ -794,7 +899,11 @@ removeBatch(500, 100);
 
 ### STEP CYCLE FIXER
 
+cycles = set()
+max_cycles = 20
 for i in range(1, len(rankings_worst_to_best)):
+    if len(cycles) >= max_cycles:
+        break
     print(f"... starting {i}")
     segment = rankings_worst_to_best[-i:]
     root = segment[0]["Key"]
@@ -803,9 +912,27 @@ for i in range(1, len(rankings_worst_to_best)):
         movie['Key']
         for movie in segment
     ])
-    hit = False
     for cycle in nx.simple_cycles(subgraph):
-        hit = True
-        pprint(cycle)
-        break
-    
+        cycle = tuple(cycle)
+        if cycle not in cycles:
+            pprint(cycle)
+            cycles.add(cycle)
+            if len(cycles) >= max_cycles:
+                break
+
+pprint(cycles)
+
+
+segment = run_fix_multi_loop(
+    cycles,
+    # movie_key=ranking_key,
+    # max_segments=100,
+    # sort_key=sort_key,
+    # sort_reversed=sort_reversed,
+)
+change = {
+    "loser": segment["right"],
+    "winner": segment["left"],
+}
+set_memo(memo, change["loser"], change["winner"])
+
