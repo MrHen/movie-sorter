@@ -727,7 +727,6 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-
 run_cycle_fixer(verbose=False)
 run_save()
 
@@ -802,6 +801,11 @@ results = sort_by_month(
 )
 graph = memo_to_graph(memo)
 subgraph = graph.subgraph([movie["Key"] for movie in results['movies']])
+
+graph = memo_to_graph(memo)
+nodes = [movie["Key"] for movie in rankings_worst_to_best[-100:]]
+subgraph = graph.subgraph(nodes)
+
 save_hierarchy(
     graph=subgraph,
     base_dir=constants.BASE_DIR,
