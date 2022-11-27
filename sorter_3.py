@@ -618,8 +618,9 @@ def run_rankings_batch_cycle_fixer(
     verbose=False,
     max_segments=100,
     max_cycles=30,
+    start=None,
 ):
-    i = 1
+    i = start or 1
     while i < len(rankings_worst_to_best):
         print(f"... starting {i}")
         cycles = set()
@@ -676,6 +677,7 @@ def run_cycle_fixer(
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
     verbose=False,
+    start=None,
 ):
     total_changes = []
     saw_change = True
@@ -693,6 +695,7 @@ def run_cycle_fixer(
                 memo=memo,
                 rankings_worst_to_best=rankings_worst_to_best,
                 verbose=verbose,
+                start=start,
             )
             change = next(batch_gen, None)
             changes = [change] if change else []
@@ -727,7 +730,7 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False)
+run_cycle_fixer(verbose=False, start=100)
 run_save()
 
 #### UTILITIES
