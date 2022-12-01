@@ -10,7 +10,7 @@ from labels import build_movie_label
 from lists import create_weighted_list, do_lists_match, load_list, load_list_names, print_list_comparison, write_file_parts
 from loops import run_fix_multi_loop
 from loops_graph import graph_to_loops
-from memo import print_memo, set_memo
+from memo import clear_memo, print_memo, reverse_memo, set_memo
 from rankings import ranked_to_key
 from ratings import rating_cmp, rating_to_key
 from tags import group_diary_by_tag
@@ -737,7 +737,23 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "The Cat Returns (2002)", movies_by_key)
+print_memo(memo, "Persepolis (2007)", movies_by_key)
+reverse_memo(memo, "Persepolis (2007)", "Once Upon a Time in Mexico (2003)")
+clear_memo(memo, "The Matrix (1999)")
+
+### REINSERT
+
+memo_key = "The Matrix (1999)"
+movie = movies_by_key.get(memo_key, None)
+if movie:
+    index = len(rankings_worst_to_best) - movie["Position"]
+    if rankings_worst_to_best[index]["Key"] == memo_key:
+        del rankings_worst_to_best[index]
+        print(f"deleting {memo_key}")
+        movie["Position"] = None
+        movie["Rating"] = None
+    else:
+        print(f"missing {memo_key}")
 
 
 ### PRINT BY TAG
