@@ -739,11 +739,11 @@ run_save()
 
 print_memo(memo, "Persepolis (2007)", movies_by_key)
 reverse_memo(memo, "Persepolis (2007)", "Once Upon a Time in Mexico (2003)")
-clear_memo(memo, "The Matrix (1999)")
+clear_memo(memo, "(500) Days of Summer (2009)")
 
 ### REINSERT
 
-memo_key = "The Matrix (1999)"
+memo_key = "(500) Days of Summer (2009)"
 movie = movies_by_key.get(memo_key, None)
 if movie:
     index = len(rankings_worst_to_best) - movie["Position"]
@@ -866,7 +866,7 @@ print(dedent(
     """
 ))
 
-#
+# 
 
 list_names = load_list_names()
 list_data = [
@@ -886,8 +886,9 @@ for decade, movies in lists_by_decade.items():
     print(f'boo {decade}')
     print_list_comparison(movies, decade_list['movies'])
 
+# COMBO LISTS
 
-merged = create_weighted_list(list_data=list_data, tag="stats-tracker")
+merged = create_weighted_list(list_data=list_data, tag="stats-combo")
 write_file_parts(movies=merged, filename="stats_combo")
 
 merged = create_weighted_list(list_data=list_data, tag="watchlist")
@@ -917,7 +918,7 @@ removeBatch = async function (size, timeout=200) {
     var seconds = (endTime - startTime) / 1000;
     console.log("Done.", seconds, seconds / size);
 }
-removeBatch(500, 100);
+removeBatch(500, 50);
 """
 
 ### STEP CYCLE FIXER
