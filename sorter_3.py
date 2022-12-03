@@ -730,7 +730,7 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False, start=240)
+run_cycle_fixer(verbose=False, start=250)
 run_save()
 
 #### UTILITIES
@@ -820,6 +820,11 @@ results = sort_by_month(
 )
 graph = memo_to_graph(memo)
 subgraph = graph.subgraph([movie["Key"] for movie in results['movies']])
+
+print("\n" + "\n".join([
+    build_movie_label(movie)
+    for movie in sorted(results['movies'], key=itemgetter('Position'))
+]))
 
 graph = memo_to_graph(memo)
 nodes = [movie["Key"] for movie in rankings_worst_to_best[-100:]]
