@@ -328,8 +328,8 @@ Position,Name,Year,LetterboxdURI,Description
 327,All Is Lost,2013,https://boxd.it/4OgK,
 328,Lady and the Tramp,1955,https://boxd.it/1Wv8,
 329,Top Gun,1986,https://boxd.it/29JC,
-330,The Mitchells vs. The Machines,2021,https://boxd.it/i7xm,4.0 star threshold (14%)
-331,Millennium Actress,2001,https://boxd.it/1fK0,
+330,The Mitchells vs. The Machines,2021,https://boxd.it/i7xm,
+331,Millennium Actress,2001,https://boxd.it/1fK0,4.0 star threshold (14%)
 332,Cabaret,1972,https://boxd.it/1Vpe,
 333,Dog Day Afternoon,1975,https://boxd.it/29bg,
 334,Pariah,2011,https://boxd.it/2wWk,
@@ -872,8 +872,8 @@ Position,Name,Year,LetterboxdURI,Description
 871,The Thief and the Cobbler,1993,https://boxd.it/1tpq,
 872,The Signal,2007,https://boxd.it/1QWi,
 873,Let's Eat,2020,https://boxd.it/s5pA,
-874,Concrete,2019,https://boxd.it/lTT2,2.5 star threshold (14%)
-875,The Fast and the Furious: Tokyo Drift,2006,https://boxd.it/1Yeo,
+874,Concrete,2019,https://boxd.it/lTT2,
+875,The Fast and the Furious: Tokyo Drift,2006,https://boxd.it/1Yeo,2.5 star threshold (14%)
 876,Everything Is Illuminated,2005,https://boxd.it/2ayg,
 877,Leprechaun in the Hood,2000,https://boxd.it/1HIw,
 878,Demon Seed,1977,https://boxd.it/1Glm,
@@ -1002,8 +1002,8 @@ Position,Name,Year,LetterboxdURI,Description
 1001,The Gift,2000,https://boxd.it/27ys,
 1002,The Void,2016,https://boxd.it/d93S,
 1003,The Slumber Party Massacre,1982,https://boxd.it/1rIq,
-1004,Equilibrium,2002,https://boxd.it/211s,2.0 star threshold (11%)
-1005,The Cat Returns,2002,https://boxd.it/1Mne,
+1004,Equilibrium,2002,https://boxd.it/211s,
+1005,The Cat Returns,2002,https://boxd.it/1Mne,2.0 star threshold (11%)
 1006,Ghost Rider,2007,https://boxd.it/290M,
 1007,The Pacifier,2005,https://boxd.it/1Xhm,
 1008,Green Lantern,2011,https://boxd.it/QN4,
@@ -1097,8 +1097,8 @@ Position,Name,Year,LetterboxdURI,Description
 1096,The Final Destination,2009,https://boxd.it/1EmW,
 1097,Avengers: Endgame,2019,https://boxd.it/9vE4,
 1098,Daredevil,2003,https://boxd.it/1YzG,
-1099,The Wicker Man,2006,https://boxd.it/1XZS,1.5 star threshold ( 8%)
-1100,Highlander III: The Sorcerer,1994,https://boxd.it/20Gk,
+1099,The Wicker Man,2006,https://boxd.it/1XZS,
+1100,Highlander III: The Sorcerer,1994,https://boxd.it/20Gk,1.5 star threshold ( 8%)
 1101,The Adventures of Sharkboy and Lavagirl,2005,https://boxd.it/1Ozm,
 1102,The Three Caballeros,1944,https://boxd.it/1Lae,
 1103,Death Proof,2007,https://boxd.it/27GG,
@@ -1156,8 +1156,8 @@ Position,Name,Year,LetterboxdURI,Description
 1155,How to Cope with Death,2002,https://boxd.it/bT2s,
 1156,The Intern,2015,https://boxd.it/7AOE,
 1157,Dinosaur,2000,https://boxd.it/1VWi,
-1158,S1m0ne,2002,https://boxd.it/1Z2o,1.0 star threshold ( 5%)
-1159,Entrapment,1999,https://boxd.it/282i,
+1158,S1m0ne,2002,https://boxd.it/1Z2o,
+1159,Entrapment,1999,https://boxd.it/282i,1.0 star threshold ( 5%)
 1160,Babylon A.D.,2008,https://boxd.it/1YPk,
 1161,Hudson Hawk,1991,https://boxd.it/1Z32,
 1162,Sing,2016,https://boxd.it/b5EQ,
@@ -1174,10 +1174,11 @@ Position,Name,Year,LetterboxdURI,Description
 1173,Fool's Gold,2008,https://boxd.it/1ZXE,
 1174,Proof of Life,2000,https://boxd.it/1SBQ,
 1175,Naqoyqatsi,2002,https://boxd.it/1BiM,
-1176,Spy Hard,1996,https://boxd.it/1W1s,
-1177,The Master of Disguise,2002,https://boxd.it/1Pai,
-1178,Left Behind: The Movie,2000,https://boxd.it/18AC,
-1179,Elektra,2005,https://boxd.it/1XsE,
-1180,The Cat in the Hat,2003,https://boxd.it/1VSU,
-1181,The Langoliers,1995,https://boxd.it/4NUO,
-1182,Dr. Dolittle 2,2001,https://boxd.it/1Vlm,0.5 star threshold ( 2%)
+1176,The Craft: Legacy,2020,https://boxd.it/lKYs,
+1177,Spy Hard,1996,https://boxd.it/1W1s,
+1178,The Master of Disguise,2002,https://boxd.it/1Pai,
+1179,Left Behind: The Movie,2000,https://boxd.it/18AC,
+1180,Elektra,2005,https://boxd.it/1XsE,
+1181,The Cat in the Hat,2003,https://boxd.it/1VSU,
+1182,The Langoliers,1995,https://boxd.it/4NUO,
+1183,Dr. Dolittle 2,2001,https://boxd.it/1Vlm,0.5 star threshold ( 2%)
