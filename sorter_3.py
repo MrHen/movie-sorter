@@ -616,8 +616,8 @@ def run_rankings_batch_cycle_fixer(
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
     verbose=False,
-    max_segments=100,
-    max_cycles=30,
+    max_segments=30,
+    max_cycles=100,
     start=None,
 ):
     i = start or 1
