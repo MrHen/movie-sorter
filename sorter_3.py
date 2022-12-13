@@ -622,7 +622,7 @@ def run_rankings_batch_cycle_fixer(
 ):
     i = start or 1
     while i < len(rankings_worst_to_best):
-        print(f"... starting {i}")
+        print(f"... starting {build_movie_label(rankings_worst_to_best[-i])}")
         cycles = set()
         segment = rankings_worst_to_best[-i:]
         graph = memo_to_graph(memo)
@@ -737,15 +737,16 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Persepolis (2007)", movies_by_key)
-reverse_memo(memo, "Persepolis (2007)", "Once Upon a Time in Mexico (2003)")
+print_memo(memo, "Guillermo del Toro's Pinocchio (2022)", movies_by_key)
+reverse_memo(memo, "Guillermo del Toro's Pinocchio (2022)", "Once Upon a Time in Mexico (2003)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
 ### REINSERT
 
-memo_key = "(500) Days of Summer (2009)"
+memo_key = "Avatar (2009)"
 movie = movies_by_key.get(memo_key, None)
 if movie:
+    clear_memo(memo, memo_key)
     index = len(rankings_worst_to_best) - movie["Position"]
     if rankings_worst_to_best[index]["Key"] == memo_key:
         del rankings_worst_to_best[index]
