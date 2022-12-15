@@ -437,6 +437,12 @@ def run_diary_update(
         movies_by_key=movies_by_key,
         rankings_worst_to_best=rankings_worst_to_best,
     )
+    run_save(
+        rankings_worst_to_best=rankings_worst_to_best,
+        stars_worst_to_best=stars_worst_to_best,
+        rating_curve=rating_curve,
+        memo=memo,
+    )
     results = sorted(update_diary(
         memo=memo,
         rankings_worst_to_best=rankings_worst_to_best,
