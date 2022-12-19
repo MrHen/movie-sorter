@@ -3,11 +3,12 @@ import math
 
 def build_thresholds(ratingIds, ratingCurve, totalRated):
     ratingThresholds = {}
-    thresholdTotal = 0
+    curve_total = 0
     for rating in ratingIds:
         curve = ratingCurve[rating]
-        thresholdTotal += totalRated * curve
-        thresholdFloor = math.floor(thresholdTotal)
+        curve_total += curve
+        threshold = totalRated * curve_total
+        thresholdFloor = math.floor(threshold)
         if len(rating) == 1:
             rating = f"{rating}.0"
         percentage = math.floor(curve*100)
