@@ -649,7 +649,7 @@ def run_rankings_batch_cycle_fixer(
                 memo=memo,
                 verbose=verbose,
                 max_segments=max_segments,
-                loops=cycles,
+                loops=sorted(cycles, key=len),
             )
             yield change
         else:
@@ -736,7 +736,7 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False, start=200)
+run_cycle_fixer(verbose=False, start=300)
 run_save()
 
 #### UTILITIES
