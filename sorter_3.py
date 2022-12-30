@@ -899,17 +899,17 @@ for decade, movies in lists_by_decade.items():
     print_list_comparison(movies, decade_list['movies'])
 
 # COMBO LISTS
+combo_tag = "sight-and-sound-combo"
+merged = create_weighted_list(list_data=list_data, tag=combo_tag)
+write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
 
-merged = create_weighted_list(list_data=list_data, tag="stats-combo")
-write_file_parts(movies=merged, filename="stats_combo")
-
-merged = create_weighted_list(list_data=list_data, tag="watchlist")
-merged_unwatched = [
+merged = create_weighted_list(list_data=list_data, tag=combo_tag)
+merged = [
     movie
     for movie in merged
     if line_to_key(movie) not in movies_by_key
 ]
-write_file_parts(movies=merged_unwatched[:500], filename="watchlist_combo")
+write_file_parts(movies=merged[:1000], filename=combo_tag.replace('-', '_'))
 
 """
 removeBatch = async function (size, timeout=200) {

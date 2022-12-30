@@ -42,16 +42,18 @@ def load_list(*, list_dir=LISTS_DIR, list_name):
 def merge_lists(*, lists):
     weights = {}
     full = {}
-    for list in lists:
-        movies = list["movies"]
+    for movie_list in lists:
+        movies = movie_list["movies"]
         count = len(movies)
         for movie in movies:
             url = movie["URL"]
             if url not in full:
-                full[url] = movie
+                full[url] = {
+                    **movie
+                }
             if "Matches" not in full[url]:
                 full[url]["Matches"] = []
-            full[url]["Matches"].append(list["metadata"]["Name"])
+            full[url]["Matches"].append(movie_list["metadata"]["Name"])
             weights[url] = weights.get(url, 0) + (1 / count)
     return [
         {
