@@ -743,8 +743,8 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Guillermo del Toro's Pinocchio (2022)", movies_by_key)
-reverse_memo(memo, "Guillermo del Toro's Pinocchio (2022)", "Once Upon a Time in Mexico (2003)")
+print_memo(memo, "Kaili Blues (2015)", movies_by_key)
+reverse_memo(memo, "Kaili Blues (2015)", "Serpico (1973)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
 ### REINSERT
