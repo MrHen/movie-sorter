@@ -83,7 +83,7 @@ def reload():
             **{
                 key: diary_by_key.get(movie_key, {}).get(key, None)
                 for key in diary_by_key.get(movie_key, {}).keys()
-                if key in {'Watched Date', 'Watched Month', 'Tags'}
+                if key in {'Watched Date', 'Watched Month', 'Watched Year', 'Tags'}
             },
             **{
                 key: rankings_by_key.get(movie_key, {}).get(key, None)
@@ -137,6 +137,14 @@ def movie_months(*, movies_by_key=movies_by_key):
         movie.get('Watched Month')
         for movie in movies_by_key.values()
         if movie.get('Watched Month')
+    }
+
+
+def movie_years(*, movies_by_key=movies_by_key):
+    return {
+        movie.get('Watched Year')
+        for movie in movies_by_key.values()
+        if movie.get('Watched Year')
     }
 
 
@@ -336,6 +344,20 @@ def sort_by_month(
     return result
 
 
+def sort_by_year(
+    *,
+    target_year,
+    movies_by_key,
+):
+    movies = [
+        movie
+        for movie in movies_by_key.values()
+        if target_year == movie.get('Watched Year', None) and "Position" in movie
+    ]
+    movies = sorted(movies, key=itemgetter("Position"))
+    return movies
+
+
 # FIX SHORT CYCLES
 def fix_adjacent(
     *,
@@ -347,7 +369,7 @@ def fix_adjacent(
         memo,
         rankings_worst_to_best,
         # step=1,
-        # do_swap=False,
+        do_swap=True,
         # max_changes=1,
         max_changes_memo=None,
         reverse=True,
@@ -463,17 +485,20 @@ def run_clean_up_gen(
     *,
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
+    verbose=False,
 ):
     print(f'\t... running fix_adjacent')
     changes = fix_adjacent(
         memo=memo,
         rankings_worst_to_best=rankings_worst_to_best,
+        verbose=verbose,
     )
     if not changes:
         print(f'\t... running fix_small_loop')
         changes = fix_small_loop(
             memo=memo,
             ranking_worst_to_best=rankings_worst_to_best,
+            verbose=verbose,
         )
     changes = changes or []
     return (change for change in changes)
@@ -483,6 +508,7 @@ def run_clean_up(
     *,
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
+    verbose=False,
 ):
     total_changes = []
     saw_change = True
@@ -492,6 +518,7 @@ def run_clean_up(
         changes = run_clean_up_gen(
             memo=memo,
             rankings_worst_to_best=rankings_worst_to_best,
+            verbose=verbose,
         )
         for change in changes:
             print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
@@ -684,6 +711,7 @@ def run_cycle_fixer(
     rankings_worst_to_best=rankings_worst_to_best,
     verbose=False,
     start=None,
+    max_cycles=100,
 ):
     total_changes = []
     saw_change = True
@@ -702,6 +730,7 @@ def run_cycle_fixer(
                 rankings_worst_to_best=rankings_worst_to_best,
                 verbose=verbose,
                 start=start,
+                max_cycles=max_cycles,
             )
             change = next(batch_gen, None)
             changes = [change] if change else []
@@ -736,23 +765,37 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False, start=300)
+run_cycle_fixer(verbose=False, max_cycles=100, start=350)
 run_save()
 
 #### UTILITIES
 
 ### PRINT MEMO
 
-print_memo(memo, "Kaili Blues (2015)", movies_by_key)
+print_memo(memo, "Come and See (1985)", movies_by_key)
 reverse_memo(memo, "Kaili Blues (2015)", "Serpico (1973)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
+# loser then winner
+set_memo(memo, "Bo Burnham: Inside (2021)", "Drive My Car (2021)", verbose=True)
+
+graph = memo_to_graph(memo)
+nx.shortest_path(graph, "Some Like It Hot (1959)", "Drive My Car (2021)")
+
+print("\n" + "\n".join([
+    build_movie_label(movie)
+    for movie in rankings_worst_to_best[-30:]
+]))
+
+
 ### REINSERT
 
-memo_key = "Avatar (2009)"
+memo_key = "Bo Burnham: Inside (2021)"
+do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
-    clear_memo(memo, memo_key)
+    if do_clear:
+        clear_memo(memo, memo_key)
     index = len(rankings_worst_to_best) - movie["Position"]
     if rankings_worst_to_best[index]["Key"] == memo_key:
         del rankings_worst_to_best[index]
@@ -777,6 +820,7 @@ print("\n" + "\n".join([
 
 months = sorted(movie_months())
 target_month = months[-2]
+target_month = months[-1]
 results = sort_by_month(
     target_month=target_month,
     movies_by_key=movies_by_key,
@@ -787,6 +831,27 @@ print("\n" + "\n".join([
     for movie in results['movies']
 ]))
 
+years = sorted(movie_years())
+target_year = years[-2]
+target_year = years[-1]
+
+results = sort_by_year(
+    target_year=target_year,
+    movies_by_key=movies_by_key,
+)
+print("\n" + "\n".join([
+    build_movie_label(movie)
+    for movie in results
+]))
+
+#
+
+result = sort_movies(
+    movies=results[:20],
+    memo=memo,
+    verbose=True,
+    reverse=True,
+)
 
 ### PRINT DELTAS
 
@@ -820,6 +885,7 @@ for movie in reversed(ranked_deltas):
 
 months = sorted(movie_months())
 target_month = months[-2]
+target_month = months[-1]
 results = sort_by_month(
     target_month=target_month,
     movies_by_key=movies_by_key,
@@ -855,6 +921,7 @@ count_min = 10
 count_max = 25
 decades_best_to_worst = build_decade_grouping(rankings_worst_to_best=rankings_worst_to_best)
 lists_by_decade = {}
+ranked_decades_description = []
 for decade in decades_best_to_worst:
     movies = decades_best_to_worst[decade]["movies"][:count_max]
     if len(movies) >= count_min:
@@ -864,19 +931,9 @@ for decade in decades_best_to_worst:
             movie["Key"]
             for movie in movies
         ])
+        ranked_decades_description.append(f'<a href="https://letterboxd.com/mrhen/list/top-{decade}">Top {decade}</a>')
 
-print(dedent(
-    f"""
-    <a href="https://letterboxd.com/mrhen/list/top-2010s">Top 2010s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-2000s">Top 2000s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-1990s">Top 1990s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-1980s">Top 1980s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-1970s">Top 1970s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-1960s">Top 1960s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-1950s">Top 1950s</a>
-    <a href="https://letterboxd.com/mrhen/list/top-1940s">Top 1940s</a>
-    """
-))
+print("\n".join(reversed(ranked_decades_description)))
 
 # 
 

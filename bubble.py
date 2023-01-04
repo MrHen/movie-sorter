@@ -23,7 +23,8 @@ def sort_bubble_step(
     )
     can_swap = detail["result"] == 1
     if do_swap and can_swap:
-        print(f"Bubble swap: {rating_to_key(left)}\t now ahead of {rating_to_key(right)}")
+        verb = "behind" if reverse else "ahead of"
+        print(f"Bubble swap: {rating_to_key(left)}\t now {verb} {rating_to_key(right)}")
         ratings[index] = right
         ratings[index+step] = left
     return detail

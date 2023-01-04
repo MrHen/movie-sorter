@@ -21,6 +21,7 @@ def load_diary(file):
         {
             **row,
             "Watched Month": row.get("Watched Date", "")[:7] or None,
+            "Watched Year": row.get("Watched Date", "")[:4] or None,
             "Key": line_to_key(row),
             "Tags": line_to_diary_tags(row),
         }
