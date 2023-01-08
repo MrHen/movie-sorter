@@ -197,6 +197,8 @@ def rerank(
         movie["Position"] = position
         movie["Description"] = description
         movie["RatingCurr"] = str(rating_curr)
+        if 'Rating' not in movie:
+            print(f'{build_movie_label(movie)} has no Rating')
         movie["RatingPrev"] = movie["Rating"]
         movie["RatingDelta"] = rating_curr - float(movie["Rating"])
         if description:
@@ -765,14 +767,14 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False, max_cycles=100, start=350)
+run_cycle_fixer(verbose=False, max_cycles=100, start=50)
 run_save()
 
 #### UTILITIES
 
 ### PRINT MEMO
 
-print_memo(memo, "Come and See (1985)", movies_by_key)
+print_memo(memo, "Sweet Sweetback's Baadasssss Song (1971)", movies_by_key)
 reverse_memo(memo, "Kaili Blues (2015)", "Serpico (1973)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
@@ -790,20 +792,25 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Bo Burnham: Inside (2021)"
+memo_key = "Speed Racer (2008)"
+memo_key = "Sweet Sweetback's Baadasssss Song (1971)"
 do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
     if do_clear:
         clear_memo(memo, memo_key)
-    index = len(rankings_worst_to_best) - movie["Position"]
-    if rankings_worst_to_best[index]["Key"] == memo_key:
-        del rankings_worst_to_best[index]
-        print(f"deleting {memo_key}")
-        movie["Position"] = None
-        movie["Rating"] = None
+    position = movie.get('Position', None)
+    if position is not None:
+        index = len(rankings_worst_to_best) - movie["Position"]
+        if rankings_worst_to_best[index]["Key"] == memo_key:
+            del rankings_worst_to_best[index]
+            print(f"deleting {memo_key}")
+            movie["Position"] = None
+            movie["Rating"] = None
+        else:
+            print(f"missing {memo_key}")
     else:
-        print(f"missing {memo_key}")
+        print(f"missing Position for {memo_key}")
 
 
 ### PRINT BY TAG
