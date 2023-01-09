@@ -47,7 +47,14 @@ def rating_sorter(
     return detail["result"]
 
 
-def rating_sorter_detail(a, b, memo, verbose=True, reverse=False, use_label=False):
+def rating_sorter_detail(
+        a,
+        b,
+        memo,
+        verbose=True,
+        reverse=False,
+        use_label=False,
+):
     detail = {
         "change": None,
     }

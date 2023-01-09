@@ -368,13 +368,13 @@ def fix_adjacent(
     verbose=False,
 ):
     changes_memo = bubble_pass(
-        memo,
-        rankings_worst_to_best,
+        memo=memo,
+        rankings=rankings_worst_to_best,
         # step=1,
         do_swap=True,
         # max_changes=1,
         max_changes_memo=None,
-        reverse=True,
+        reverse=False,
         verbose=verbose,
         use_label=True,
     )
@@ -774,12 +774,12 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Sweet Sweetback's Baadasssss Song (1971)", movies_by_key)
-reverse_memo(memo, "Kaili Blues (2015)", "Serpico (1973)")
+print_memo(memo, "Dr. Dolittle 2 (2001)", movies_by_key)
+reverse_memo(memo, "Drive My Car (2021)", "A Fish Called Wanda (1988)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
 # loser then winner
-set_memo(memo, "Bo Burnham: Inside (2021)", "Drive My Car (2021)", verbose=True)
+set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
 
 graph = memo_to_graph(memo)
 nx.shortest_path(graph, "Some Like It Hot (1959)", "Drive My Car (2021)")
@@ -839,8 +839,8 @@ print("\n" + "\n".join([
 ]))
 
 years = sorted(movie_years())
-target_year = years[-2]
 target_year = years[-1]
+target_year = years[-2]
 
 results = sort_by_year(
     target_year=target_year,
@@ -854,7 +854,7 @@ print("\n" + "\n".join([
 #
 
 result = sort_movies(
-    movies=results[:20],
+    movies=results[:10],
     memo=memo,
     verbose=True,
     reverse=True,

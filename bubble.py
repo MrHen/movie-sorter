@@ -2,8 +2,9 @@ from ratings import rating_sorter, rating_sorter_detail, rating_to_key
 
 
 def sort_bubble_step(
+    *,
     memo,
-    ratings,
+    rankings,
     index,
     verbose=False,
     step=1,
@@ -11,8 +12,8 @@ def sort_bubble_step(
     reverse=False,
     use_label=False,
 ):
-    left = ratings[index]
-    right = ratings[index+step]
+    left = rankings[index]
+    right = rankings[index+step]
     detail = rating_sorter_detail(
         left,
         right,
@@ -25,12 +26,13 @@ def sort_bubble_step(
     if do_swap and can_swap:
         verb = "behind" if reverse else "ahead of"
         print(f"Bubble swap: {rating_to_key(left)}\t now {verb} {rating_to_key(right)}")
-        ratings[index] = right
-        ratings[index+step] = left
+        rankings[index] = right
+        rankings[index+step] = left
     return detail
 
 
 def bubble_pass(
+    *,
     memo,
     rankings,
     verbose=True,
@@ -43,13 +45,11 @@ def bubble_pass(
 ):
     changes_rankings = 0
     changes_memo = []
-    if reverse:
-        rankings = list(reversed(rankings))
     for i in range(len(rankings) - step):
         detail = sort_bubble_step(
-            memo,
-            rankings,
-            i,
+            memo=memo,
+            rankings=rankings,
+            index=i,
             step=step,
             verbose=verbose,
             do_swap=do_swap,
