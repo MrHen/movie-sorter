@@ -387,6 +387,7 @@ def fix_small_loop(
     ranking_worst_to_best,
     verbose=False,
     max_segments=20,
+    max_loops=100
 ):
     changes = []
     graph = memo_to_graph(memo)
@@ -395,7 +396,7 @@ def fix_small_loop(
         graph=graph,
         rankings=ranking_best_to_worst,
         cutoff=2,
-        max_loops=100,
+        max_loops=max_loops,
         verbose=verbose,
     )
     if loops:
