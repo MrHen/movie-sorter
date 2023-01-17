@@ -412,7 +412,7 @@ def fix_small_loop(
 
 
 def fix_loops(*, memo, verbose, max_segments, loops):
-    print(f"\n{len(loops)} segments\n")
+    print(f"\n{len(loops)} loops\n")
     segment = run_fix_multi_loop(
             loops,
             # movie_key=ranking_key,
@@ -489,6 +489,7 @@ def run_clean_up_gen(
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
     verbose=False,
+    max_loops=100,
 ):
     print(f'\t... running fix_adjacent')
     changes = fix_adjacent(
@@ -502,6 +503,7 @@ def run_clean_up_gen(
             memo=memo,
             ranking_worst_to_best=rankings_worst_to_best,
             verbose=verbose,
+            max_loops=max_loops,
         )
     changes = changes or []
     return (change for change in changes)
@@ -512,6 +514,7 @@ def run_clean_up(
     memo=memo,
     rankings_worst_to_best=rankings_worst_to_best,
     verbose=False,
+    max_loops=100,
 ):
     total_changes = []
     saw_change = True
@@ -522,6 +525,7 @@ def run_clean_up(
             memo=memo,
             rankings_worst_to_best=rankings_worst_to_best,
             verbose=verbose,
+            max_loops=max_loops,
         )
         for change in changes:
             print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
@@ -756,7 +760,7 @@ pprint(results)
 
 
 ### CLEAN UP
-results = run_clean_up()
+results = run_clean_up(max_loops=500)
 pprint(results)
 run_save()
 
@@ -1037,3 +1041,24 @@ change = {
 }
 set_memo(memo, change["loser"], change["winner"])
 
+
+
+###
+
+changes = fix_small_loop(
+    memo=memo,
+    ranking_worst_to_best=rankings_worst_to_best,
+    verbose=False,
+    max_segments=100,
+    max_loops=1000,
+)
+
+graph = memo_to_graph(memo)
+loops = graph_to_loops(
+    graph=graph,
+    rankings=list(reversed(rankings_worst_to_best)),
+    cutoff=2,
+    max_loops=1000,
+    verbose=False,
+)
+print(len(loops))
