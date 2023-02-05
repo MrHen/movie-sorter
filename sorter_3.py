@@ -598,6 +598,7 @@ def run_months_gen(
     movies_by_key=movies_by_key,
     rankings_worst_to_best=rankings_worst_to_best,
     verbose=False,
+    months_range=-2,
 ):
     print(f'\t... running fix_adjacent')
     changes = fix_adjacent(
@@ -612,7 +613,7 @@ def run_months_gen(
         )
     if not changes:
         months = sorted(movie_months())
-        months = months[-2:]
+        months = months[months_range:]
         for month in months:
             print(f'\t... running sort_by_month for {month}')
             result = sort_by_month(
@@ -633,6 +634,7 @@ def run_months(
     memo=memo,
     movies_by_key=movies_by_key,
     rankings_worst_to_best=rankings_worst_to_best,
+    months_range=-2,
 ):
     total_changes = []
     saw_change = True
@@ -643,6 +645,7 @@ def run_months(
             memo=memo,
             movies_by_key=movies_by_key,
             rankings_worst_to_best=rankings_worst_to_best,
+            months_range=months_range,
         )
         for change in changes:
             print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
@@ -767,7 +770,7 @@ run_save()
 
 # FIX TOPICAL CYCLES
 results = run_tags()
-results = run_months()
+results = run_months(months_range=-3)
 pprint(results)
 run_save()
 
@@ -853,7 +856,7 @@ results = sort_by_year(
 )
 print("\n" + "\n".join([
     build_movie_label(movie)
-    for movie in results
+    for movie in results[:20]
 ]))
 
 #
@@ -968,7 +971,7 @@ for decade, movies in lists_by_decade.items():
     print_list_comparison(movies, decade_list['movies'])
 
 # COMBO LISTS
-combo_tag = "sight-and-sound-combo"
+combo_tag = "watchlist"
 merged = create_weighted_list(list_data=list_data, tag=combo_tag)
 write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
 
@@ -991,7 +994,7 @@ removeBatch = async function (size, timeout=200) {
             break;
         }
         remove = removes[max_remove - count];
-        console.log(count, removes.length, remove);
+        console.log(count, removes.length);
         remove.click();
         await new Promise(r => setTimeout(r, timeout));
     }
