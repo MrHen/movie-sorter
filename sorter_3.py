@@ -800,8 +800,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Speed Racer (2008)"
-memo_key = "Sweet Sweetback's Baadasssss Song (1971)"
+memo_key = "Amélie (2001)"
 do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -834,8 +833,8 @@ print("\n" + "\n".join([
 ]))
 
 months = sorted(movie_months())
-target_month = months[-2]
 target_month = months[-1]
+target_month = months[-2]
 results = sort_by_month(
     target_month=target_month,
     movies_by_key=movies_by_key,
@@ -871,7 +870,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-2:]
+changable = months[-3:]
 
 ranked_deltas = [
     movie
