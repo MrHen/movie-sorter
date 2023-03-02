@@ -8,7 +8,7 @@ import urllib.parse
 
 
 ALLOWED_EXT = {'mp4', 'mkv', 'm4v'}
-REJECTED_EXT = {'srt'}
+REJECTED_EXT = {'srt', 'jpg'}
 
 SKIP_REGEX = r'.*(trailer|Trailer).*'
 

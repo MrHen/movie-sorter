@@ -800,8 +800,8 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Amélie (2001)"
-do_clear = False
+memo_key = "Tremors (1990)"
+do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
     if do_clear:
@@ -870,7 +870,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-3:]
+changable = months[-2:]
 
 ranked_deltas = [
     movie
