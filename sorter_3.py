@@ -775,7 +775,7 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False, max_cycles=100, start=50)
+run_cycle_fixer(verbose=False, max_cycles=500, start=10)
 run_save()
 
 #### UTILITIES
@@ -783,7 +783,7 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "Dr. Dolittle 2 (2001)", movies_by_key)
-reverse_memo(memo, "Drive My Car (2021)", "A Fish Called Wanda (1988)")
+reverse_memo(memo, "Persona (1966)", "Everything Everywhere All at Once (2022)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
 # loser then winner
