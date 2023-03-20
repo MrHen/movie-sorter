@@ -770,7 +770,7 @@ run_save()
 
 # FIX TOPICAL CYCLES
 results = run_tags()
-results = run_months(months_range=-3)
+results = run_months(months_range=-2)
 pprint(results)
 run_save()
 
@@ -783,7 +783,7 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "Dr. Dolittle 2 (2001)", movies_by_key)
-reverse_memo(memo, "Persona (1966)", "Everything Everywhere All at Once (2022)")
+reverse_memo(memo, "Eternal Sunshine of the Spotless Mind (2004)", "When the Wind Blows (1986)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
 # loser then winner
