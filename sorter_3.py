@@ -822,6 +822,8 @@ if movie:
 
 ### PRINT BY TAG
 target_tag = 'movie-club'
+target_tag = 'marathon-tarantino'
+target_tag = 'marathon-pixar'
 results = sort_by_tag(
     target_tag=target_tag,
     movies_by_key=movies_by_key,
