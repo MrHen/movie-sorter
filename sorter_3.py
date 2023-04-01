@@ -782,7 +782,7 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Dr. Dolittle 2 (2001)", movies_by_key)
+print_memo(memo, "John Wick (2014)", movies_by_key)
 reverse_memo(memo, "Eternal Sunshine of the Spotless Mind (2004)", "When the Wind Blows (1986)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
@@ -800,7 +800,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "The Cat in the Hat (2003)"
+memo_key = "John Wick (2014)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
