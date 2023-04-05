@@ -775,7 +775,8 @@ pprint(results)
 run_save()
 
 # FIX EVERYTHING
-run_cycle_fixer(verbose=False, max_cycles=500, start=50)
+run_save()
+run_cycle_fixer(verbose=False, max_cycles=500, start=100)
 run_save()
 
 #### UTILITIES
