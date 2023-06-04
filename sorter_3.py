@@ -770,7 +770,7 @@ run_save()
 
 # FIX TOPICAL CYCLES
 results = run_tags()
-results = run_months(months_range=-2)
+results = run_months(months_range=-3)
 pprint(results)
 run_save()
 
@@ -873,7 +873,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-2:]
+changable = months[-3:]
 
 ranked_deltas = [
     movie
