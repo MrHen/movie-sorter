@@ -801,8 +801,8 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Little Miss Sunshine (2006)"
-do_clear = True
+memo_key = "Gojira no Gyakushu (1955)"
+do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
     if do_clear:
