@@ -770,7 +770,7 @@ run_save()
 
 # FIX TOPICAL CYCLES
 results = run_tags()
-results = run_months(months_range=-3)
+results = run_months(months_range=-2)
 pprint(results)
 run_save()
 
@@ -801,7 +801,8 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Gojira no Gyakushu (1955)"
+memo_key = "Godzilla Raids Again (1955)"
+memo_key = "Godzilla Raids Again (1955)"
 do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -873,7 +874,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-3:]
+changable = months[-2:]
 
 ranked_deltas = [
     movie
