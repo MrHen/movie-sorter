@@ -826,6 +826,7 @@ if movie:
 target_tag = 'movie-club'
 target_tag = 'marathon-tarantino'
 target_tag = 'marathon-pixar'
+target_tag = 'marathon-dolittle'
 results = sort_by_tag(
     target_tag=target_tag,
     movies_by_key=movies_by_key,
@@ -974,7 +975,7 @@ for decade, movies in lists_by_decade.items():
     print_list_comparison(movies, decade_list['movies'])
 
 # COMBO LISTS
-combo_tag = "watchlist"
+combo_tag = "stats-combo"
 merged = create_weighted_list(list_data=list_data, tag=combo_tag)
 write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
 
