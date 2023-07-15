@@ -2,20 +2,20 @@ import csv
 
 from functools import cmp_to_key
 from operator import itemgetter
-from labels import build_movie_label
+from labels import build_movie_label, normalize_key
 
 from prompt import prompt_for_winner
 
 
 def rating_to_key(line):
     if "Key" in line:
-        return line.get("Key")
+        return normalize_key(line.get("Key"))
     name = line["Name"]
     if name == "A Day in the Country":
         year = "1946"
     else:
         year = line["Year"]
-    return f"{name} ({year})"
+    return normalize_key(f"{name} ({year})")
 
 
 def load_ratings(file):

@@ -238,6 +238,7 @@ def update_rankings(
         for movie_key, movie in movies_by_key.items()
         if movie_has_rating(movie) and not movie_has_ranking(movie)
     }
+    print(f'Missing keys: {missing_keys}')
     for missing_key in missing_keys:
         missing_movie = movies_by_key[missing_key]
         missing_index = run_search(

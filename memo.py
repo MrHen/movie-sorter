@@ -2,7 +2,7 @@ import csv
 
 from operator import itemgetter
 
-from labels import build_movie_label
+from labels import build_movie_label, normalize_key
 from ratings import rating_sorter
 
 
@@ -10,7 +10,10 @@ def load_memo(file):
     # LeftKey,RightKey,Winner
     reader = csv.DictReader(file)
     comparisons = {
-        frozenset({row["LeftKey"], row["RightKey"]}): (row["Winner"] or None)
+        frozenset({
+            normalize_key(row["LeftKey"]),
+            normalize_key(row["RightKey"])
+        }): (normalize_key(row["Winner"]) or None)
         for row in reader
     }
     return comparisons
