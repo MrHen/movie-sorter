@@ -1,15 +1,16 @@
 import csv
 
 from operator import itemgetter
+from labels import normalize_key
 
 from ratings import rating_to_key
 
 def ranked_to_key(line):
     if "Key" in line:
-        return line.get("Key")
+        return normalize_key(line.get("Key"))
     name = line["Name"]
     year = line["Year"]
-    return f"{name} ({year})"
+    return normalize_key(f"{name} ({year})")
 
 
 def load_rankings(file, ratings=None):

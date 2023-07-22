@@ -1,11 +1,13 @@
 import csv
 
+from labels import normalize_key
+
 def line_to_key(line):
     if "Key" in line:
-        return line.get("Key")
+        return normalize_key(line.get("Key"))
     name = line["Name"]
     year = line["Year"]
-    return f"{name} ({year})"
+    return normalize_key(f"{name} ({year})")
 
 
 def line_to_tags(line):
