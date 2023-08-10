@@ -777,14 +777,14 @@ run_save()
 
 # FIX EVERYTHING
 run_save()
-run_cycle_fixer(verbose=False, max_cycles=500, start=180)
+run_cycle_fixer(verbose=False, max_cycles=500, start=220)
 run_save()
 
 #### UTILITIES
 
 ### PRINT MEMO
 
-print_memo(memo, "John Wick (2014)", movies_by_key)
+print_memo(memo, "Metropolis (1927)", movies_by_key)
 reverse_memo(memo, "Eternal Sunshine of the Spotless Mind (2004)", "When the Wind Blows (1986)")
 clear_memo(memo, "(500) Days of Summer (2009)")
 
@@ -876,7 +876,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-2:]
+changable = months[-3:]
 
 ranked_deltas = [
     movie
