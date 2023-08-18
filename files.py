@@ -13,6 +13,7 @@ from thresholds import build_description, build_thresholds
 def load_diary_file(*, base_dir=constants.BASE_DIR):
     ignore_diary_keys = frozenset({
         "Family Dog (1987)",
+        "Not so fast (2019)",
     })
     rankings_file = f"{base_dir}/diary.csv"
     with open(rankings_file, 'r', encoding='UTF-8') as file:
