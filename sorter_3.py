@@ -785,8 +785,8 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "Metropolis (1927)", movies_by_key)
-reverse_memo(memo, "Eternal Sunshine of the Spotless Mind (2004)", "When the Wind Blows (1986)")
-clear_memo(memo, "(500) Days of Summer (2009)")
+reverse_memo(memo, "King of New York (1990)", "The Legend of 1900 (1998)")
+clear_memo(memo, "Sneakers (1992)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -802,8 +802,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Godzilla Raids Again (1955)"
-memo_key = "Godzilla Raids Again (1955)"
+memo_key = "The Fountain (2006)"
 do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
