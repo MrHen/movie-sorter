@@ -82,6 +82,7 @@ def group_diaries_by_month(
                     for entry in diary_entries
                     if entry.get(watched_month_index)
                     if "ignore-ranking" not in (entry.get("Tags") or [])
+                    if "read-screenplay" not in (entry.get("Tags") or [])
                 ],
                 key=itemgetter(watched_month_index)
             ),

@@ -71,7 +71,7 @@ def reload():
     diary_by_key = {
         line_to_key(entry): entry
         for entry in diary_entries
-        if not movie_has_diary_tag(entry, 'ignore-ranking')
+        if not movie_has_diary_tag(entry, 'ignore-ranking') and not movie_has_diary_tag(entry, 'read-screenplay')
     }
     rating_keys = frozenset(ratings_by_key.keys())
     ranking_keys = frozenset(rankings_by_key.keys())
@@ -128,7 +128,7 @@ def movie_tags(*, movies_by_key=movies_by_key):
         tag
         for movie in movies_by_key.values()
         for tag in (movie.get('Tags', None) or [])
-        if tag not in ["ignore-ranking", "profile", "to-review"]
+        if tag not in ["ignore-ranking", "profile", "to-review", "read-screenplay"]
     }
 
 
@@ -267,6 +267,7 @@ def update_diary(
         if movie_has_diary(movie)
         if not movie_has_ranking(movie)
         if not movie_has_diary_tag(movie, 'ignore-ranking')
+        if not movie_has_diary_tag(movie, 'read-screenplay')
     }
     output = []
     for missing_key in missing_keys:
@@ -786,7 +787,7 @@ run_save()
 
 print_memo(memo, "The Lion King (1994)", movies_by_key)
 reverse_memo(memo, "King of New York (1990)", "The Legend of 1900 (1998)")
-clear_memo(memo, "Sneakers (1992)")
+clear_memo(memo, "Tampopo (1985)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -802,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Moon (2009)"
+memo_key = "Mulan (1998)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:

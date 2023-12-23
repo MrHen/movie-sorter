@@ -120,7 +120,7 @@ def reload_diary(
     diary_by_key = {
         line_to_key(entry): entry
         for entry in diary_entries
-        if "ignore-ranking" not in (entry["Tags"] or [])
+        if ("ignore-ranking" not in (entry["Tags"] or [])) and ("read-screenplay" not in (entry["Tags"] or []))
     }
     diary_keys = frozenset(diary_by_key.keys())
     ranking_keys = frozenset([
