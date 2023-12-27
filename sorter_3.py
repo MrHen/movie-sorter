@@ -786,7 +786,7 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "The Lion King (1994)", movies_by_key)
-reverse_memo(memo, "King of New York (1990)", "The Legend of 1900 (1998)")
+reverse_memo(memo, "Sisters (1972)", "Coming Out (2020)")
 clear_memo(memo, "Tampopo (1985)")
 
 # loser then winner
@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Mulan (1998)"
+memo_key = "Tampopo (1985)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -876,7 +876,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-3:]
+changable = months[-5:]
 
 ranked_deltas = [
     movie
