@@ -803,8 +803,8 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "The Emperor's New Groove (2000)"
-do_clear = True
+memo_key = "Astartes (2020)"
+do_clear = False
 movie = movies_by_key.get(memo_key, None)
 if movie:
     if do_clear:
