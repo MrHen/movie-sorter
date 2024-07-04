@@ -787,7 +787,7 @@ run_save()
 
 print_memo(memo, "The Lion King (1994)", movies_by_key)
 reverse_memo(memo, "Sisters (1972)", "Coming Out (2020)")
-clear_memo(memo, "Se7en (1995)")
+clear_memo(memo, "Forrest Gump (1994)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -803,8 +803,8 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Astartes (2020)"
-do_clear = False
+memo_key = "Forrest Gump (1994)"
+do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
     if do_clear:
