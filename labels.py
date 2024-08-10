@@ -15,5 +15,6 @@ def normalize_key(key):
     if key is None:
         return None
     normalized = re.sub(r'\s+', ' ', key)
-    normalized = re.sub(r'[-–]', '-', key)
+    normalized = re.sub(r'[-–]', '-', normalized)
+    normalized = normalized.strip()
     return normalized
