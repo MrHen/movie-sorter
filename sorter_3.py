@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Forrest Gump (1994)"
+memo_key = "Tangled (2010)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
