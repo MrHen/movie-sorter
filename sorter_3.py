@@ -785,7 +785,7 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "The Lion King (1994)", movies_by_key)
+print_memo(memo, "Chernobyl (2019)", movies_by_key)
 reverse_memo(memo, "Sisters (1972)", "Coming Out (2020)")
 clear_memo(memo, "Forrest Gump (1994)")
 
@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Tangled (2010)"
+memo_key = "Minority Report (2002)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
