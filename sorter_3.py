@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Minority Report (2002)"
+memo_key = "Frozen (2013)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
