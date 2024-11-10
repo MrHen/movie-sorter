@@ -13,6 +13,8 @@ def rating_to_key(line):
     name = line["Name"]
     if name == "A Day in the Country":
         year = "1946"
+    elif name == "The Stolen Child":
+        year = "2018"
     else:
         year = line["Year"]
     return normalize_key(f"{name} ({year})")

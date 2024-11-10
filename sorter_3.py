@@ -976,7 +976,7 @@ for decade, movies in lists_by_decade.items():
     print_list_comparison(movies, decade_list['movies'])
 
 # COMBO LISTS
-combo_tag = "stats-combo"
+combo_tag = "watchlist-combo"
 merged = create_weighted_list(list_data=list_data, tag=combo_tag)
 write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
 
