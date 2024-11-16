@@ -787,7 +787,7 @@ run_save()
 
 print_memo(memo, "Chernobyl (2019)", movies_by_key)
 reverse_memo(memo, "Sisters (1972)", "Coming Out (2020)")
-clear_memo(memo, "Forrest Gump (1994)")
+clear_memo(memo, "My Neighbor Totoro (1988)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Frozen (2013)"
+memo_key = "White Echo (2019)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -976,10 +976,11 @@ for decade, movies in lists_by_decade.items():
     print_list_comparison(movies, decade_list['movies'])
 
 # COMBO LISTS
-combo_tag = "watchlist-combo"
+combo_tag = "watchlist"
 merged = create_weighted_list(list_data=list_data, tag=combo_tag)
 write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
 
+combo_tag = "watchlist"
 merged = create_weighted_list(list_data=list_data, tag=combo_tag)
 merged = [
     movie
