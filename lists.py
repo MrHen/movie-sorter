@@ -53,7 +53,7 @@ def merge_lists(*, lists):
                 }
             if "Matches" not in full[url]:
                 full[url]["Matches"] = []
-            full[url]["Matches"].append(movie_list["metadata"]["Name"])
+            full[url]["Matches"].append(f"{movie_list['metadata']['Name']} (1/{count})")
             weights[url] = weights.get(url, 0) + (1 / count)
     return [
         {

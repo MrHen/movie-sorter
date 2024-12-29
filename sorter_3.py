@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "White Echo (2019)"
+memo_key = "The Stolen Child (2018)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -977,16 +977,18 @@ for decade, movies in lists_by_decade.items():
 
 # COMBO LISTS
 combo_tag = "watchlist"
-merged = create_weighted_list(list_data=list_data, tag=combo_tag)
-write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
-
-combo_tag = "watchlist"
-merged = create_weighted_list(list_data=list_data, tag=combo_tag)
-merged = [
-    movie
-    for movie in merged
-    if line_to_key(movie) not in movies_by_key
+unlogged_list_data = [
+    {
+        **movie_list,
+        'movies': [
+            movie
+            for movie in movie_list['movies']
+            if line_to_key(movie) not in movies_by_key
+        ]
+    }
+    for movie_list in list_data
 ]
+merged = create_weighted_list(list_data=unlogged_list_data, tag=combo_tag)
 write_file_parts(movies=merged[:1000], filename=combo_tag.replace('-', '_'))
 
 """
