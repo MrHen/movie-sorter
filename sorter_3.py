@@ -785,7 +785,7 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Chernobyl (2019)", movies_by_key)
+print_memo(memo, "The Incredibles (2004)", movies_by_key)
 reverse_memo(memo, "Sisters (1972)", "Coming Out (2020)")
 clear_memo(memo, "My Neighbor Totoro (1988)")
 
@@ -803,7 +803,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "The Stolen Child (2018)"
+memo_key = "The Incredibles (2004)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -975,20 +975,10 @@ for decade, movies in lists_by_decade.items():
     print(f'boo {decade}')
     print_list_comparison(movies, decade_list['movies'])
 
-# COMBO LISTS
-combo_tag = "watchlist"
-unlogged_list_data = [
-    {
-        **movie_list,
-        'movies': [
-            movie
-            for movie in movie_list['movies']
-            if line_to_key(movie) not in movies_by_key
-        ]
-    }
-    for movie_list in list_data
-]
-merged = create_weighted_list(list_data=unlogged_list_data, tag=combo_tag)
+
+# STATS COMBO
+combo_tag = "stats"
+merged = create_weighted_list(list_data=list_data, tag=combo_tag)
 write_file_parts(movies=merged[:1000], filename=combo_tag.replace('-', '_'))
 
 """
@@ -1012,6 +1002,22 @@ removeBatch = async function (size, timeout=200) {
 }
 removeBatch(500, 50);
 """
+
+# WATCHLIST COMBO
+combo_tag = "watchlist"
+unlogged_list_data = [
+    {
+        **movie_list,
+        'movies': [
+            movie
+            for movie in movie_list['movies']
+            if line_to_key(movie) not in movies_by_key
+        ]
+    }
+    for movie_list in list_data
+]
+merged = create_weighted_list(list_data=unlogged_list_data, tag=combo_tag)
+write_file_parts(movies=merged[:1000], filename=combo_tag.replace('-', '_'))
 
 ### STEP CYCLE FIXER
 
