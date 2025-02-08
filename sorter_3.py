@@ -785,9 +785,9 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "The Incredibles (2004)", movies_by_key)
-reverse_memo(memo, "Sisters (1972)", "Coming Out (2020)")
-clear_memo(memo, "My Neighbor Totoro (1988)")
+print_memo(memo, "Pure (2010)", movies_by_key)
+reverse_memo(memo, "Wish (2023)", "The Darjeeling Limited (2007)")
+clear_memo(memo, "Wish (2023)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
