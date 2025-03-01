@@ -309,13 +309,21 @@ def sort_by_tag(
     memo,
     verbose=True,
     reverse=True,
+    extras=None,
+    presort_key="Watched Date",
 ):
     movies = [
         movie
         for movie in movies_by_key.values()
         if target_tag in (movie.get('Tags', None) or [])
     ]
-    movies = sorted(movies, key=itemgetter("Watched Date"))
+    movies = sorted(
+        [
+            *movies,
+            *(extras or [])
+        ],
+        key=itemgetter(presort_key)
+    )
     result = sort_movies(
         movies,
         memo=memo,
@@ -786,7 +794,7 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "Pure (2010)", movies_by_key)
-reverse_memo(memo, "Wish (2023)", "The Darjeeling Limited (2007)")
+reverse_memo(memo, "The Deer Hunter (1978)", "The Silence of the Lambs (1991)")
 clear_memo(memo, "Wish (2023)")
 
 # loser then winner
@@ -828,15 +836,39 @@ target_tag = 'movie-club'
 target_tag = 'marathon-tarantino'
 target_tag = 'marathon-pixar'
 target_tag = 'marathon-dolittle'
+target_tag = 'oscar-best-picture-winner'
 results = sort_by_tag(
     target_tag=target_tag,
     movies_by_key=movies_by_key,
     memo=memo,
+    presort_key="Name",
+    extras=[
+        movies_by_key["Birdman or (The Unexpected Virtue of Ignorance) (2014)"],
+        movies_by_key["The Artist (2011)"],
+        movies_by_key["Slumdog Millionaire (2008)"],
+        movies_by_key["The Departed (2006)"],
+        movies_by_key["Crash (2004)"],
+        movies_by_key["Million Dollar Baby (2004)"],
+        # movies_by_key["The Lord of the Rings: The Return of the King (2003)"],
+        # TODO  movies_by_key["A Beautiful Mind (2001)"],
+        movies_by_key["Gladiator (2000)"],
+        movies_by_key["American Beauty (1999)"],
+        # TODO movies_by_key["Braveheart (1995)"],
+        movies_by_key["Schindler's List (1993)"],
+        movies_by_key["The Silence of the Lambs (1991)"],
+        movies_by_key["Rain Man (1988)"],
+        # movies_by_key["Chariots of Fire (1981)"],
+        # movies_by_key["Annie Hall (1977)"],
+        movies_by_key["Rocky (1976)"],
+        movies_by_key["The Sting (1973)"],
+        movies_by_key["On the Waterfront (1954)"],
+    ]
 )
 print("\n" + "\n".join([
     build_movie_label(movie)
     for movie in results['movies']
 ]))
+
 
 months = sorted(movie_months())
 target_month = months[-1]
