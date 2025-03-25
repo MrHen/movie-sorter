@@ -794,7 +794,7 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "Pure (2010)", movies_by_key)
-reverse_memo(memo, "The Deer Hunter (1978)", "The Silence of the Lambs (1991)")
+reverse_memo(memo, "Slaxx (2020)", "The Dot and the Line: A Romance in Lower Mathematics (1965)")
 clear_memo(memo, "Wish (2023)")
 
 # loser then winner
@@ -987,7 +987,7 @@ for decade in decades_best_to_worst:
 
 print("\n".join(reversed(ranked_decades_description)))
 
-# 
+# LOAD LISTS
 
 list_names = load_list_names()
 list_data = [
@@ -1009,9 +1009,9 @@ for decade, movies in lists_by_decade.items():
 
 
 # STATS COMBO
-combo_tag = "stats"
+combo_tag = "stats-combo"
 merged = create_weighted_list(list_data=list_data, tag=combo_tag)
-write_file_parts(movies=merged[:1000], filename=combo_tag.replace('-', '_'))
+write_file_parts(movies=merged, filename=combo_tag.replace('-', '_'))
 
 """
 removeBatch = async function (size, timeout=200) {

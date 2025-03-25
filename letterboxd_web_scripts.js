@@ -35,3 +35,16 @@ for (let header of headers) {
     }
 }
 
+// CLONE FILM LIST
+Array.from(
+    document
+    .querySelectorAll(".listitem .poster, .poster-container .poster .frame-title")
+    .values()
+)
+    .map((item) => item.innerText.match(/(.+) \((\d{4})\)/))
+    .map((match) => {
+        const title = match[1].replace(/"/g, '""'); // Escape quotes
+        const year = match[2];
+        return `"${title}",${year}`;
+    })
+    .join('\n');
