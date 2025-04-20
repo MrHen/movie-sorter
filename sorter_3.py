@@ -672,17 +672,22 @@ def run_rankings_batch_cycle_fixer(
     max_segments=30,
     max_cycles=100,
     start=None,
+    window_size=None,
 ):
     i = start or 1
     while i < len(rankings_worst_to_best):
-        print(f"... starting {build_movie_label(rankings_worst_to_best[-i])}")
+        window_start = -i
+        window_end = window_size and (-i + window_size)
+        print(f"... starting {build_movie_label(rankings_worst_to_best[window_start])} \t[{window_start}:{window_end}]")
         cycles = set()
-        segment = rankings_worst_to_best[-i:]
+        segment = rankings_worst_to_best[window_start:window_end]
         graph = memo_to_graph(memo)
         subgraph = graph.subgraph([
             movie['Key']
             for movie in segment
         ])
+        if verbose:
+            pprint(f'... saw {len(segment)} segment')
         for cycle in nx.simple_cycles(subgraph):
             cycle = tuple([*cycle, cycle[0]])
             if cycle not in cycles:
@@ -732,6 +737,7 @@ def run_cycle_fixer(
     verbose=False,
     start=None,
     max_cycles=100,
+    window_size=None,
 ):
     total_changes = []
     saw_change = True
@@ -751,6 +757,7 @@ def run_cycle_fixer(
                 verbose=verbose,
                 start=start,
                 max_cycles=max_cycles,
+                window_size=window_size,
             )
             change = next(batch_gen, None)
             changes = [change] if change else []
@@ -786,7 +793,8 @@ run_save()
 
 # FIX EVERYTHING
 run_save()
-run_cycle_fixer(verbose=False, max_cycles=500, start=100)
+run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=5)
+run_cycle_fixer(verbose=False, max_cycles=500, start=1)
 run_save()
 
 #### UTILITIES
