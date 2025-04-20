@@ -793,6 +793,7 @@ run_save()
 
 # FIX EVERYTHING
 run_save()
+run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=4)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=5)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1)
 run_save()
@@ -802,8 +803,8 @@ run_save()
 ### PRINT MEMO
 
 print_memo(memo, "Pure (2010)", movies_by_key)
-reverse_memo(memo, "Slaxx (2020)", "The Dot and the Line: A Romance in Lower Mathematics (1965)")
-clear_memo(memo, "Wish (2023)")
+reverse_memo(memo, "Divinity (2023)", "Don't Peek (2020)")
+clear_memo(memo, "Don't Peek (2020)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -819,7 +820,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "The Incredibles (2004)"
+memo_key = "Shrek (2001)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
