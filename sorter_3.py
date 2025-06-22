@@ -317,13 +317,16 @@ def sort_by_tag(
         for movie in movies_by_key.values()
         if target_tag in (movie.get('Tags', None) or [])
     ]
-    movies = sorted(
-        [
+    if (extras):
+        movies = [
             *movies,
-            *(extras or [])
-        ],
-        key=itemgetter(presort_key)
-    )
+            *extras
+        ]
+    if presort_key:
+        movies = sorted(
+            movies,
+            key=itemgetter(presort_key)
+        )
     result = sort_movies(
         movies,
         memo=memo,
@@ -804,7 +807,7 @@ run_save()
 
 print_memo(memo, "Pure (2010)", movies_by_key)
 reverse_memo(memo, "Divinity (2023)", "Don't Peek (2020)")
-clear_memo(memo, "Don't Peek (2020)")
+clear_memo(memo, "The Carnival Is Over (2018)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -820,7 +823,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Shrek (2001)"
+memo_key = "The Carnival Is Over (2018)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
@@ -851,6 +854,7 @@ results = sort_by_tag(
     movies_by_key=movies_by_key,
     memo=memo,
     presort_key="Name",
+    # presort_key=None,
     extras=[
         movies_by_key["Birdman or (The Unexpected Virtue of Ignorance) (2014)"],
         movies_by_key["The Artist (2011)"],
