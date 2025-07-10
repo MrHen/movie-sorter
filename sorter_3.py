@@ -875,6 +875,7 @@ results = sort_by_tag(
         movies_by_key["Rocky (1976)"],
         movies_by_key["The Sting (1973)"],
         movies_by_key["On the Waterfront (1954)"],
+        movies_by_key["My Fair Lady (1964)"],
     ]
 )
 print("\n" + "\n".join([
