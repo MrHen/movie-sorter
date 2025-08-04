@@ -823,7 +823,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "The Carnival Is Over (2018)"
+memo_key = "Uncut Gems (2019)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
