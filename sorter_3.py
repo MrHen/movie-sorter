@@ -676,6 +676,7 @@ def run_rankings_batch_cycle_fixer(
     max_cycles=100,
     start=None,
     window_size=None,
+    do_fix=True,
 ):
     i = start or 1
     while i < len(rankings_worst_to_best):
@@ -690,7 +691,7 @@ def run_rankings_batch_cycle_fixer(
             for movie in segment
         ])
         if verbose:
-            pprint(f'... saw {len(segment)} segment')
+            print(f'... saw {len(segment)} segment')
         for cycle in nx.simple_cycles(subgraph):
             cycle = tuple([*cycle, cycle[0]])
             if cycle not in cycles:
@@ -700,13 +701,16 @@ def run_rankings_batch_cycle_fixer(
                 if len(cycles) >= max_cycles:
                     break
         if cycles:
-            change = fix_loops(
-                memo=memo,
-                verbose=verbose,
-                max_segments=max_segments,
-                loops=sorted(cycles, key=len),
-            )
-            yield change
+            if do_fix:
+                change = fix_loops(
+                    memo=memo,
+                    verbose=verbose,
+                    max_segments=max_segments,
+                    loops=sorted(cycles, key=len),
+                )
+                yield change
+            else:
+                print('... skip fix')
         else:
             change = None
         if not change:
@@ -741,6 +745,7 @@ def run_cycle_fixer(
     start=None,
     max_cycles=100,
     window_size=None,
+    do_fix=True,
 ):
     total_changes = []
     saw_change = True
@@ -761,6 +766,7 @@ def run_cycle_fixer(
                 start=start,
                 max_cycles=max_cycles,
                 window_size=window_size,
+                do_fix=do_fix,
             )
             change = next(batch_gen, None)
             changes = [change] if change else []
@@ -796,9 +802,10 @@ run_save()
 
 # FIX EVERYTHING
 run_save()
+run_cycle_fixer(verbose=False, max_cycles=500, start=1)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=4)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=5)
-run_cycle_fixer(verbose=False, max_cycles=500, start=1)
+run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=6)
 run_save()
 
 #### UTILITIES
