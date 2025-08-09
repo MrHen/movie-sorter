@@ -804,8 +804,8 @@ run_save()
 run_save()
 run_cycle_fixer(verbose=False, max_cycles=500, start=1)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=4)
-run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=5)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=6)
+run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=7)
 run_save()
 
 #### UTILITIES
