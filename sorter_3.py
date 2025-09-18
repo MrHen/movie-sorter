@@ -830,7 +830,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Uncut Gems (2019)"
+memo_key = "I Saw the TV Glow (2024)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
