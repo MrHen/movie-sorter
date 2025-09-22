@@ -814,7 +814,7 @@ run_save()
 
 print_memo(memo, "Pure (2010)", movies_by_key)
 reverse_memo(memo, "Divinity (2023)", "Don't Peek (2020)")
-clear_memo(memo, "The Carnival Is Over (2018)")
+clear_memo(memo, "VOIR (2021)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
