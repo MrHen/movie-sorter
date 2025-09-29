@@ -804,8 +804,8 @@ run_save()
 run_save()
 run_cycle_fixer(verbose=False, max_cycles=500, start=1)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=4)
-run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=6)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=7)
+run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=8)
 run_save()
 
 #### UTILITIES
@@ -929,7 +929,7 @@ result = sort_movies(
 ### PRINT DELTAS
 
 months = sorted(movie_months())
-changable = months[-5:]
+changable = months[-6:]
 
 ranked_deltas = [
     movie
