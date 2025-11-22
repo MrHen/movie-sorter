@@ -812,7 +812,7 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Pure (2010)", movies_by_key)
+print_memo(memo, "Natural Born Killers (1994)", movies_by_key)
 reverse_memo(memo, "Divinity (2023)", "Don't Peek (2020)")
 clear_memo(memo, "Convergence (2017)")
 
@@ -830,7 +830,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "Convergence (2017)"
+memo_key = "A Serious Man (2009)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:
