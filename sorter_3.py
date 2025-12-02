@@ -852,9 +852,9 @@ if movie:
 
 ### PRINT BY TAG
 target_tag = 'movie-club'
-target_tag = 'marathon-tarantino'
 target_tag = 'marathon-pixar'
 target_tag = 'marathon-dolittle'
+target_tag = 'marathon-tarantino'
 target_tag = 'oscar-best-picture-winner'
 results = sort_by_tag(
     target_tag=target_tag,
@@ -862,28 +862,28 @@ results = sort_by_tag(
     memo=memo,
     presort_key="Name",
     # presort_key=None,
-    extras=[
-        movies_by_key["Birdman or (The Unexpected Virtue of Ignorance) (2014)"],
-        movies_by_key["The Artist (2011)"],
-        movies_by_key["Slumdog Millionaire (2008)"],
-        movies_by_key["The Departed (2006)"],
-        movies_by_key["Crash (2004)"],
-        movies_by_key["Million Dollar Baby (2004)"],
-        # movies_by_key["The Lord of the Rings: The Return of the King (2003)"],
-        # TODO  movies_by_key["A Beautiful Mind (2001)"],
-        movies_by_key["Gladiator (2000)"],
-        movies_by_key["American Beauty (1999)"],
-        # TODO movies_by_key["Braveheart (1995)"],
-        movies_by_key["Schindler's List (1993)"],
-        movies_by_key["The Silence of the Lambs (1991)"],
-        movies_by_key["Rain Man (1988)"],
-        # movies_by_key["Chariots of Fire (1981)"],
-        # movies_by_key["Annie Hall (1977)"],
-        movies_by_key["Rocky (1976)"],
-        movies_by_key["The Sting (1973)"],
-        movies_by_key["On the Waterfront (1954)"],
-        movies_by_key["My Fair Lady (1964)"],
-    ]
+    # extras=[
+    #     movies_by_key["Birdman or (The Unexpected Virtue of Ignorance) (2014)"],
+    #     movies_by_key["The Artist (2011)"],
+    #     movies_by_key["Slumdog Millionaire (2008)"],
+    #     movies_by_key["The Departed (2006)"],
+    #     movies_by_key["Crash (2004)"],
+    #     movies_by_key["Million Dollar Baby (2004)"],
+    #     # movies_by_key["The Lord of the Rings: The Return of the King (2003)"],
+    #     # TODO  movies_by_key["A Beautiful Mind (2001)"],
+    #     movies_by_key["Gladiator (2000)"],
+    #     movies_by_key["American Beauty (1999)"],
+    #     # TODO movies_by_key["Braveheart (1995)"],
+    #     movies_by_key["Schindler's List (1993)"],
+    #     movies_by_key["The Silence of the Lambs (1991)"],
+    #     movies_by_key["Rain Man (1988)"],
+    #     # movies_by_key["Chariots of Fire (1981)"],
+    #     # movies_by_key["Annie Hall (1977)"],
+    #     movies_by_key["Rocky (1976)"],
+    #     movies_by_key["The Sting (1973)"],
+    #     movies_by_key["On the Waterfront (1954)"],
+    #     movies_by_key["My Fair Lady (1964)"],
+    # ]
 )
 print("\n" + "\n".join([
     build_movie_label(movie)
