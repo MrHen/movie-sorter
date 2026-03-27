@@ -184,6 +184,7 @@ def rerank(
     rankings_worst_to_best,
     stars_worst_to_best,
     rating_curve,
+    force_save=False,
 ):
     total_rated = len(rankings_worst_to_best)
     ranking_thresholds = build_thresholds(reversed(stars_worst_to_best), rating_curve, total_rated)
@@ -199,6 +200,8 @@ def rerank(
         movie["RatingCurr"] = str(rating_curr)
         if 'Rating' not in movie:
             print(f'{build_movie_label(movie)} has no Rating')
+            if force_save:
+                continue
         movie["RatingPrev"] = movie["Rating"]
         movie["RatingDelta"] = rating_curr - float(movie["Rating"])
         if description:
@@ -209,6 +212,7 @@ def save_all(
     *,
     memo=memo,
     rankings_worst_to_best,
+    force_save=False,
 ):
     rankings_best_to_worst = list(reversed(rankings_worst_to_best))
     rankings_output = [
@@ -220,6 +224,7 @@ def save_all(
             "Description": movie["Description"],
         }
         for movie in rankings_best_to_worst
+        if "Name" in movie or not force_save
     ]
     write_rankings_file(rankings_output)
     write_memo_file(memo)
@@ -450,15 +455,18 @@ def run_save(
     rankings_worst_to_best=rankings_worst_to_best,
     stars_worst_to_best=stars_worst_to_best,
     rating_curve=rating_curve,
+    force_save=False,
 ):
     rerank(
         rankings_worst_to_best=rankings_worst_to_best,
         stars_worst_to_best=stars_worst_to_best,
         rating_curve=rating_curve,
+        force_save=force_save,
     )
     save_all(
         memo=memo,
         rankings_worst_to_best=rankings_worst_to_best,
+        force_save=force_save,
     )
 
 
@@ -812,9 +820,9 @@ run_save()
 
 ### PRINT MEMO
 
-print_memo(memo, "Natural Born Killers (1994)", movies_by_key)
-reverse_memo(memo, "Divinity (2023)", "Don't Peek (2020)")
-clear_memo(memo, "Convergence (2017)")
+print_memo(memo, "Convergence (2016)", movies_by_key)
+reverse_memo(memo, "Friday (1995)", "The Handmaiden (2016)")
+clear_memo(memo, "Necktie (2013)")
 
 # loser then winner
 set_memo(memo, "Bo Burnham: Inside (2021)", "Come and See (1985)", verbose=True)
@@ -830,7 +838,7 @@ print("\n" + "\n".join([
 
 ### REINSERT
 
-memo_key = "A Serious Man (2009)"
+memo_key = "Save Ralph (2021)"
 do_clear = True
 movie = movies_by_key.get(memo_key, None)
 if movie:

@@ -17,6 +17,8 @@ def load_diary_file(*, base_dir=constants.BASE_DIR):
         "Not so fast (2019)",
         "Astartes (2020)",
         "The Stolen Child ()",
+        "Save Ralph (2021)",
+        "Necktie (2013)",
     })
     rankings_file = f"{base_dir}/diary.csv"
     with open(rankings_file, 'r', encoding='UTF-8') as file:
