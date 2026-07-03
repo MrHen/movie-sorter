@@ -782,6 +782,8 @@ def run_cycle_fixer(
             print(f'\t\t... saw change to {change["winner"]} >>> {change["loser"]}')
             total_changes.append(change)
             saw_change = True
+        if saw_change:
+            run_save()
     return total_changes
 
 
@@ -811,8 +813,6 @@ run_save()
 # FIX EVERYTHING
 run_save()
 run_cycle_fixer(verbose=False, max_cycles=500, start=1)
-run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=4)
-run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=7)
 run_cycle_fixer(verbose=False, max_cycles=500, start=1, window_size=8)
 run_save()
 
